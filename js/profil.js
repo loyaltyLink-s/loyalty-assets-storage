@@ -20,6 +20,12 @@ async function uploadAvatarFile(file) {
   const note = $("#avatarUploadNote");
   const btn = $("#changeAvatarBtn");
 
+  if (!appState.profile) {
+    note.style.color = "rgb(var(--r))";
+    note.textContent = "Profil belum siap, coba muat ulang halaman.";
+    return;
+  }
+
   if (!file.type.startsWith("image/")) {
     note.style.color = "rgb(var(--r))";
     note.textContent = "File harus berupa gambar.";
@@ -69,6 +75,11 @@ async function uploadAvatarFile(file) {
 }
 
 async function saveProfile() {
+  if (!appState.profile) {
+    $("#saveNote").style.color = "rgb(var(--r))";
+    $("#saveNote").textContent = "Profil belum siap, coba muat ulang halaman.";
+    return;
+  }
   const username = $("#usernameInput").value.trim();
   const displayName = $("#displayNameInput").value.trim();
   const avatarUrl = $("#avatarInput").value.trim();
