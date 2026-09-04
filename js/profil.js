@@ -16,6 +16,58 @@ function fillProfileForm() {
   badge.classList.toggle("is-admin", p.role === "admin");
 }
 
+async function uploadAvatarFile(file) {
+  const note = $("#avatarUploadNote");
+  const btn = $("#changeAvatarBtn");
+
+  if (!file.type.startsWith("image/")) {
+    note.style.color = "rgb(var(--r))";
+    note.textContent = "File harus berupa gambar.";
+    return;
+  }
+  if (file.size > 5 * 1024 * 1024) {
+    note.style.color = "rgb(var(--r))";
+    note.textContent = "Ukuran foto maksimal 5MB.";
+    return;
+  }
+
+  btn.disabled = true;
+  note.style.color = "rgb(var(--text-dim))";
+  note.textContent = "Mengunggah…";
+
+  try {
+    const ext = (file.name.split(".").pop() || "jpg").toLowerCase();
+    const path = `${appState.profile.id}/avatar.${ext}`;
+
+    const { error: uploadError } = await supabaseClient
+      .storage.from("avatars")
+      .upload(path, file, { upsert: true, cacheControl: "3600" });
+    if (uploadError) throw uploadError;
+
+    const { data } = supabaseClient.storage.from("avatars").getPublicUrl(path);
+    const publicUrl = data.publicUrl + "?t=" + Date.now(); // hindari cache foto lama
+
+    const { error: updateError } = await supabaseClient
+      .from("profiles")
+      .update({ avatar_url: publicUrl })
+      .eq("id", appState.profile.id);
+    if (updateError) throw updateError;
+
+    appState.profile.avatar_url = publicUrl;
+    $("#profileAvatar").src = publicUrl;
+    $("#avatarInput").value = publicUrl;
+    updateAuthUI();
+
+    note.style.color = "rgb(var(--g))";
+    note.textContent = "Foto profil diperbarui.";
+  } catch (err) {
+    note.style.color = "rgb(var(--r))";
+    note.textContent = "Gagal upload: " + err.message;
+  } finally {
+    btn.disabled = false;
+  }
+}
+
 async function saveProfile() {
   const username = $("#usernameInput").value.trim();
   const displayName = $("#displayNameInput").value.trim();
@@ -65,6 +117,11 @@ document.addEventListener("authready", (e) => {
 
 function bindProfileEvents() {
   $("#saveProfileBtn").addEventListener("click", saveProfile);
+  $("#changeAvatarBtn").addEventListener("click", () => $("#avatarFileInput").click());
+  $("#avatarFileInput").addEventListener("change", (e) => {
+    const file = e.target.files[0];
+    if (file) uploadAvatarFile(file);
+  });
   $("#usernameInput").addEventListener("input", (e) => {
     e.target.value = e.target.value.replace(/[^A-Za-z0-9]/g, "");
   });
