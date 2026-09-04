@@ -62,7 +62,25 @@ async function refreshSession() {
   appState.session = session;
 
   if (session) {
-    const { data: profile } = await supabaseClient.from("profiles").select("*").eq("id", session.user.id).single();
+    let { data: profile, error } = await supabaseClient
+      .from("profiles").select("*").eq("id", session.user.id).single();
+
+    // baris profil belum ada (mis. trigger gagal jalan) -> buat otomatis, jangan biarkan null
+    if (!profile) {
+      const meta = session.user.user_metadata || {};
+      const fallbackUsername = "user" + session.user.id.replace(/-/g, "").slice(0, 8);
+      const { data: created } = await supabaseClient
+        .from("profiles")
+        .insert({
+          id: session.user.id,
+          username: fallbackUsername,
+          display_name: meta.full_name || meta.name || session.user.email || "Pengguna baru",
+          avatar_url: meta.avatar_url || null,
+        })
+        .select()
+        .single();
+      profile = created;
+    }
     appState.profile = profile;
   } else {
     appState.profile = null;
