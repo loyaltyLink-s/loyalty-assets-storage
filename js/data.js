@@ -48,14 +48,11 @@ function fileToBase64(file) {
   });
 }
 
-// unduh file BENERAN (bukan buka halaman preview Drive).
-// Navigasi langsung ke proxy Apps Script -> Apps Script yang atur biar browser
-// nge-download filenya. TIDAK pakai fetch(), karena respons lintas-domain begini
-// kena aturan CORS dan bikin "Failed to fetch" kalau dibaca lewat JS.
+// klik = langsung download. Drive sendiri yang atur header download-nya
+// selama file di-share "Anyone with link - Viewer" (sudah otomatis dari uploadFile).
 function forceDownload(item) {
-  const url = `${CONFIG.APPS_SCRIPT_URL}?action=download&fileId=${encodeURIComponent(item.id)}`;
   const a = document.createElement("a");
-  a.href = url;
+  a.href = item.downloadUrl;
   a.target = "_blank";
   a.rel = "noopener";
   document.body.appendChild(a);
