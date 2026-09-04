@@ -15,9 +15,13 @@ async function sendMagicLink() {
 
 async function loginWithProvider(provider) {
   if (!supabaseClient) return;
+  // otomatis ikut folder tempat login.html berada, jadi tetap benar
+  // walau situsnya di-hosting di subfolder (mis. /loyalty-assets-storage/)
+  const basePath = window.location.pathname.replace(/login\.html$/, "");
+  const redirectTo = window.location.origin + basePath + "index.html";
   const { error } = await supabaseClient.auth.signInWithOAuth({
     provider,
-    options: { redirectTo: window.location.origin + "/index.html" },
+    options: { redirectTo },
   });
   if (error) $("#loginNote").textContent = "Gagal: " + error.message;
 }
