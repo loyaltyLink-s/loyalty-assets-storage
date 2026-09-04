@@ -220,7 +220,8 @@ a{ color:inherit; text-decoration:none; }
   background: rgb(var(--surface)); border: var(--border-w) solid rgb(var(--border));
   border-radius: var(--radius-m); padding:22px;
 }
-.profile-avatar{ width:72px; height:72px; border-radius:50%; object-fit:cover; margin-bottom:6px; }
+.profile-avatar{ width:72px; height:72px; border-radius:50%; object-fit:cover; margin-bottom:2px; }
+.profile-card #changeAvatarBtn{ align-self:flex-start; margin-bottom:6px; }
 .profile-card label{ font-size:12px; color: rgb(var(--text-dim)); margin-top:6px; }
 .profile-card input{
   border: var(--border-w) solid rgb(var(--border)); border-radius: var(--radius-s);
