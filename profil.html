@@ -61,6 +61,9 @@
 
       <section class="profile-card" id="profileCard" hidden>
         <img class="profile-avatar" id="profileAvatar" src="" alt="">
+        <input type="file" id="avatarFileInput" accept="image/*" hidden>
+        <button class="btn-ghost" id="changeAvatarBtn">Ganti foto profil</button>
+        <p class="popover-note" id="avatarUploadNote"></p>
 
         <label for="displayNameInput">Nama tampilan (display name)</label>
         <input type="text" id="displayNameInput" placeholder="Nama kamu">
@@ -69,7 +72,7 @@
         <input type="text" id="usernameInput" placeholder="contoh: asbakbali" pattern="[A-Za-z0-9]+">
         <p class="popover-note" id="usernameNote"></p>
 
-        <label for="avatarInput">URL foto profil</label>
+        <label for="avatarInput">Atau isi URL foto secara manual (opsional)</label>
         <input type="text" id="avatarInput" placeholder="https://…">
 
         <button class="btn-solid" id="saveProfileBtn">Simpan perubahan</button>
