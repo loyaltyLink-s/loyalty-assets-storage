@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard — Loyalty Assets Storage</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<div class="app">
+
+  <!-- ===== SIDEBAR ===== -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-brand">
+      <span class="brand-mark" aria-hidden="true">
+        <i class="dot dot-r"></i><i class="dot dot-g"></i><i class="dot dot-b"></i>
+      </span>
+      <span class="brand-text">Loyalty<br>Assets<br>Storage</span>
+    </div>
+
+    <nav class="sidebar-nav">
+      <a href="login.html" class="nav-item" id="navProfile" data-page="profil.html">
+        <svg viewBox="0 0 24 24"><path d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8Zm-7 8c0-3.3 3.1-6 7-6s7 2.7 7 6"/></svg>
+        <span>Masuk Sekarang</span>
+      </a>
+      <a href="index.html" class="nav-item" data-page="index.html">
+        <svg viewBox="0 0 24 24"><path d="M4 11.5 12 4l8 7.5V20a1 1 0 0 1-1 1h-4.5v-6h-5v6H5a1 1 0 0 1-1-1Z"/></svg>
+        <span>Dashboard</span>
+      </a>
+      <a href="data.html" class="nav-item" data-page="data.html">
+        <svg viewBox="0 0 24 24"><path d="M3 7a1 1 0 0 1 1-1h5l2 2h9a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1Z"/></svg>
+        <span>Data</span>
+      </a>
+      <div class="nav-divider"></div>
+      <a href="admin.html" class="nav-item" data-page="admin.html" id="navAdmin" hidden>
+        <svg viewBox="0 0 24 24"><path d="M12 3 4 6v6c0 4.5 3 7.7 8 9 5-1.3 8-4.5 8-9V6l-8-3Z"/></svg>
+        <span>Panel Admin</span>
+      </a>
+    </nav>
+
+    <div class="sidebar-footer">
+      <span class="footer-hint">Tersambung ke Google Drive</span>
+    </div>
+  </aside>
+  <div class="sidebar-scrim" id="sidebarScrim"></div>
+
+  <!-- ===== MAIN ===== -->
+  <div class="main">
+    <header class="topbar">
+      <button class="icon-btn only-mobile" id="menuBtn" aria-label="Menu">
+        <svg viewBox="0 0 24 24"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
+      </button>
+
+      <h1 class="page-title">Dashboard</h1>
+
+      <div class="topbar-actions">
+        <a class="btn-ghost" id="loginBtn" href="login.html">Masuk</a>
+        <a class="user-chip" id="userChip" href="profil.html" hidden>
+          <img id="userAvatar" src="" alt="">
+          <span id="userHandle">Pengguna</span>
+        </a>
+      </div>
+    </header>
+
+    <main class="content">
+      <section class="dashboard dashboard-solo">
+        <div class="stat-card stat-r">
+          <span class="stat-label">Total File</span>
+          <span class="stat-value" id="statFiles">…</span>
+        </div>
+        <div class="stat-card stat-g">
+          <span class="stat-label">Total Folder</span>
+          <span class="stat-value" id="statFolders">…</span>
+        </div>
+        <div class="stat-card stat-b">
+          <span class="stat-label">Ukuran Terpakai</span>
+          <span class="stat-value" id="statSize">…</span>
+        </div>
+      </section>
+
+      <p class="dashboard-hint">Buka menu <strong>Data</strong> di sidebar buat lihat, cari, dan kelola isi foldernya.</p>
+    </main>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="js/config.js"></script>
+<script src="js/common.js"></script>
+<script src="js/dashboard.js"></script>
+</body>
+</html>

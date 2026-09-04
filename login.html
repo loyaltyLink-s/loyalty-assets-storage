@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Masuk — Loyalty Assets Storage</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<div class="auth-page">
+  <div class="auth-card">
+    <div class="sidebar-brand auth-brand">
+      <span class="brand-mark" aria-hidden="true">
+        <i class="dot dot-r"></i><i class="dot dot-g"></i><i class="dot dot-b"></i>
+      </span>
+      <span class="brand-text">Loyalty Assets Storage</span>
+    </div>
+
+    <h1 class="auth-title">Masuk</h1>
+    <p class="auth-sub">Buat kasih ulasan atau kelola konten (khusus admin).</p>
+
+    <label for="emailInput">Email</label>
+    <input type="email" id="emailInput" placeholder="nama@email.com">
+    <button class="btn-solid" id="sendLinkBtn">Kirim link masuk</button>
+    <p class="popover-note" id="loginNote"></p>
+
+    <div class="popover-divider">atau</div>
+
+    <button class="btn-ghost" id="googleLoginBtn">Masuk dengan Google</button>
+    <button class="btn-ghost" id="githubLoginBtn">Masuk dengan GitHub</button>
+
+    <a href="index.html" class="auth-back">← Kembali tanpa masuk</a>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="js/config.js"></script>
+<script src="js/common.js"></script>
+<script src="js/login.js"></script>
+</body>
+</html>
