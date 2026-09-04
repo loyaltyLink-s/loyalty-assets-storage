@@ -48,32 +48,19 @@ function fileToBase64(file) {
   });
 }
 
-// unduh file BENERAN (bukan buka halaman preview Drive) -> ambil bytenya,
-// bikin blob URL lokal, lalu klik otomatis dengan atribut download
-async function forceDownload(item) {
-  const btn = $("#downloadBtn");
-  const original = btn.textContent;
-  btn.textContent = "Menyiapkan…";
-  btn.disabled = true;
-  try {
-    const url = `${CONFIG.APPS_SCRIPT_URL}?action=download&fileId=${encodeURIComponent(item.id)}`;
-    const res = await fetch(url);
-    if (!res.ok) throw new Error("Gagal mengambil file");
-    const blob = await res.blob();
-    const blobUrl = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = blobUrl;
-    a.download = item.name;
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-    setTimeout(() => URL.revokeObjectURL(blobUrl), 10000);
-  } catch (err) {
-    alert("Gagal download: " + err.message);
-  } finally {
-    btn.textContent = original;
-    btn.disabled = false;
-  }
+// unduh file BENERAN (bukan buka halaman preview Drive).
+// Navigasi langsung ke proxy Apps Script -> Apps Script yang atur biar browser
+// nge-download filenya. TIDAK pakai fetch(), karena respons lintas-domain begini
+// kena aturan CORS dan bikin "Failed to fetch" kalau dibaca lewat JS.
+function forceDownload(item) {
+  const url = `${CONFIG.APPS_SCRIPT_URL}?action=download&fileId=${encodeURIComponent(item.id)}`;
+  const a = document.createElement("a");
+  a.href = url;
+  a.target = "_blank";
+  a.rel = "noopener";
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
 }
 
 // ---------- RENDER: grid, breadcrumb ----------
@@ -163,7 +150,7 @@ async function openModal(item) {
   if (item.kind === "video" || item.kind === "audio") {
     preview.innerHTML = `<iframe src="${item.viewUrl}" width="100%" height="${item.kind === "video" ? 280 : 90}" allow="autoplay" style="border:0;"></iframe>`;
   } else if (item.kind === "image") {
-    preview.innerHTML = `<img src="${item.downloadUrl}" alt="${escapeHtml(item.name)}">`;
+    preview.innerHTML = `<img src="${item.imageViewUrl}" alt="${escapeHtml(item.name)}">`;
   } else if (item.kind === "text") {
     preview.innerHTML = `<div class="file-thumb" style="width:64px;height:64px;">${iconFor("text")}</div>`;
     txtPreview.hidden = false;
