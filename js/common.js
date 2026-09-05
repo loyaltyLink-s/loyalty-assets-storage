@@ -83,9 +83,11 @@ async function refreshSession() {
         .single();
       if (insertError) console.error("[DEBUG] gagal insert profiles (self-heal):", insertError.message, insertError);
       profile = created;
+      appState.profileDebugError = insertError ? ("insert: " + insertError.message) : (selectError ? ("select: " + selectError.message) : null);
+    } else {
+      appState.profileDebugError = null;
     }
     appState.profile = profile;
-    appState.profileDebugError = selectError ? selectError.message : null;
   } else {
     appState.profile = null;
   }
