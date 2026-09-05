@@ -103,23 +103,35 @@ function renderGrid() {
         <div class="file-name">${escapeHtml(item.name)}</div>
         <div class="file-meta">${item.kind === "folder" ? "Folder" : formatSize(item.size)}</div>
       </div>
-      ${item.kind === "folder" && isAdmin() ? `<button class="file-card-delete" title="Hapus folder" aria-label="Hapus folder">✕</button>` : ""}
+      ${isAdmin() ? `
+        <div class="file-card-actions">
+          <button class="file-card-action" data-action="rename" title="Ganti nama" aria-label="Ganti nama">✎</button>
+          <button class="file-card-action file-card-delete" data-action="delete" title="Hapus" aria-label="Hapus">✕</button>
+        </div>` : ""}
     `;
     card.addEventListener("click", () => {
       if (item.kind === "folder") loadFolder(item.id, item.name);
       else openModal(item);
     });
 
-    const delBtn = card.querySelector(".file-card-delete");
+    const renameBtn = card.querySelector('[data-action="rename"]');
+    if (renameBtn) {
+      renameBtn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        renameItemPrompt(item, refreshGrid);
+      });
+    }
+    const delBtn = card.querySelector('[data-action="delete"]');
     if (delBtn) {
       delBtn.addEventListener("click", async (e) => {
         e.stopPropagation();
-        if (!confirm(`Hapus folder "${item.name}" beserta semua isinya?`)) return;
+        const label = item.kind === "folder" ? `folder "${item.name}" beserta semua isinya` : `file "${item.name}"`;
+        if (!confirm(`Hapus ${label}?`)) return;
         try {
           await driveWrite("deleteItem", { fileId: item.id });
           await refreshGrid();
         } catch (err) {
-          alert("Gagal hapus folder: " + err.message);
+          alert("Gagal hapus: " + err.message);
         }
       });
     }
@@ -318,10 +330,13 @@ function bindDataEvents() {
   $("#fileInput").addEventListener("change", async (e) => {
     const file = e.target.files[0];
     if (!file) return;
+    const customName = prompt("Nama file (boleh diubah):", file.name);
+    if (!customName) { e.target.value = ""; return; }
     try {
       const base64Data = await fileToBase64(file);
-      await driveWrite("uploadFile", { parentId: dataState.path, name: file.name, mimeType: file.type, base64Data });
+      await driveWrite("uploadFile", { parentId: dataState.path, name: customName, mimeType: file.type, base64Data });
       $("#managePopover").hidden = true;
+      e.target.value = "";
       await refreshGrid();
     } catch (err) { alert("Gagal upload: " + err.message); }
   });
