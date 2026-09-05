@@ -78,6 +78,7 @@ async function refreshSession() {
           username: fallbackUsername,
           display_name: meta.full_name || meta.name || session.user.email || "Pengguna baru",
           avatar_url: meta.avatar_url || null,
+          role: "user",
         })
         .select()
         .single();
