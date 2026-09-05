@@ -129,13 +129,24 @@ async function loadAdminFolderGrid() {
       card.dataset.kind = "folder";
       card.innerHTML = `
         <div class="file-thumb">${iconFor("folder")}</div>
-        <div><div class="file-name">${escapeHtml(folder.name)}</div><div class="file-meta">Folder</div></div>
+        <div class="file-card-body"><div class="file-name">${escapeHtml(folder.name)}</div><div class="file-meta">Folder</div></div>
+        <button class="file-card-delete" title="Hapus folder" aria-label="Hapus folder">✕</button>
       `;
       card.addEventListener("click", () => {
         adminUploadState.pathChain.push({ id: folder.id, name: folder.name });
         adminUploadState.path = folder.id;
         renderAdminUploadBreadcrumb();
         loadAdminFolderGrid();
+      });
+      card.querySelector(".file-card-delete").addEventListener("click", async (e) => {
+        e.stopPropagation();
+        if (!confirm(`Hapus folder "${folder.name}" beserta semua isinya?`)) return;
+        try {
+          await driveWrite("deleteItem", { fileId: folder.id });
+          await loadAdminFolderGrid();
+        } catch (err) {
+          alert("Gagal hapus folder: " + err.message);
+        }
       });
       grid.appendChild(card);
     });
