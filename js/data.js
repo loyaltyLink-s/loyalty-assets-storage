@@ -99,15 +99,31 @@ function renderGrid() {
     card.dataset.kind = item.kind;
     card.innerHTML = `
       <div class="file-thumb">${iconFor(item.kind)}</div>
-      <div>
+      <div class="file-card-body">
         <div class="file-name">${escapeHtml(item.name)}</div>
         <div class="file-meta">${item.kind === "folder" ? "Folder" : formatSize(item.size)}</div>
       </div>
+      ${item.kind === "folder" && isAdmin() ? `<button class="file-card-delete" title="Hapus folder" aria-label="Hapus folder">✕</button>` : ""}
     `;
     card.addEventListener("click", () => {
       if (item.kind === "folder") loadFolder(item.id, item.name);
       else openModal(item);
     });
+
+    const delBtn = card.querySelector(".file-card-delete");
+    if (delBtn) {
+      delBtn.addEventListener("click", async (e) => {
+        e.stopPropagation();
+        if (!confirm(`Hapus folder "${item.name}" beserta semua isinya?`)) return;
+        try {
+          await driveWrite("deleteItem", { fileId: item.id });
+          await refreshGrid();
+        } catch (err) {
+          alert("Gagal hapus folder: " + err.message);
+        }
+      });
+    }
+
     grid.appendChild(card);
   });
 }
