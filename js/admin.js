@@ -134,7 +134,10 @@ async function loadAdminFolderGrid() {
           <div class="file-name">${escapeHtml(item.name)}</div>
           <div class="file-meta">${isFolder ? "Folder" : formatSize(item.size)}</div>
         </div>
-        <button class="file-card-delete" title="Hapus" aria-label="Hapus ${isFolder ? "folder" : "file"}">✕</button>
+        <div class="file-card-actions">
+          <button class="file-card-action" data-action="rename" title="Ganti nama" aria-label="Ganti nama">✎</button>
+          <button class="file-card-action file-card-delete" data-action="delete" title="Hapus" aria-label="Hapus">✕</button>
+        </div>
       `;
       if (isFolder) {
         card.addEventListener("click", () => {
@@ -144,7 +147,11 @@ async function loadAdminFolderGrid() {
           loadAdminFolderGrid();
         });
       }
-      card.querySelector(".file-card-delete").addEventListener("click", async (e) => {
+      card.querySelector('[data-action="rename"]').addEventListener("click", (e) => {
+        e.stopPropagation();
+        renameItemPrompt(item, loadAdminFolderGrid);
+      });
+      card.querySelector('[data-action="delete"]').addEventListener("click", async (e) => {
         e.stopPropagation();
         const label = isFolder ? `folder "${item.name}" beserta semua isinya` : `file "${item.name}"`;
         if (!confirm(`Hapus ${label}?`)) return;
@@ -184,14 +191,17 @@ function bindAdminUploadEvents() {
   $("#adminFileInput").addEventListener("change", async (e) => {
     const file = e.target.files[0];
     if (!file) return;
+    const customName = prompt("Nama file (boleh diubah):", file.name);
+    if (!customName) { e.target.value = ""; return; }
     note.style.color = "rgb(var(--text-dim))";
-    note.textContent = "Mengunggah " + file.name + "…";
+    note.textContent = "Mengunggah " + customName + "…";
     try {
       const base64Data = await fileToBase64(file);
-      await driveWrite("uploadFile", { parentId: adminUploadState.path, name: file.name, mimeType: file.type, base64Data });
+      await driveWrite("uploadFile", { parentId: adminUploadState.path, name: customName, mimeType: file.type, base64Data });
       note.style.color = "rgb(var(--g))";
-      note.textContent = "Berhasil upload: " + file.name;
+      note.textContent = "Berhasil upload: " + customName;
       e.target.value = "";
+      await loadAdminFolderGrid();
     } catch (err) {
       note.style.color = "rgb(var(--r))";
       note.textContent = "Gagal upload: " + err.message;
