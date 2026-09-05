@@ -1,6 +1,8 @@
 /* =========================================================
-   PANEL ADMIN — kelola role pengguna & moderasi ulasan
+   PANEL ADMIN — kelola role pengguna, moderasi ulasan, upload file
    ========================================================= */
+
+let adminUploadState = { path: "", pathChain: [] };
 
 document.addEventListener("authready", (e) => {
   const guard = $("#adminGuard");
@@ -26,7 +28,9 @@ function switchAdminTab(tab) {
   $$("[data-admin-tab]").forEach((b) => b.classList.toggle("is-active", b.dataset.adminTab === tab));
   $("#adminUsers").hidden = tab !== "users";
   $("#adminReviews").hidden = tab !== "reviews";
+  $("#adminUpload").hidden = tab !== "upload";
   if (tab === "reviews") loadAdminReviews();
+  if (tab === "upload") loadAdminFolderGrid();
 }
 
 async function loadAdminUsers() {
@@ -108,6 +112,88 @@ async function loadAdminReviews() {
   });
 }
 
+// =========================================================
+// TAB UPLOAD — navigasi folder (folder-only) + upload/buat folder
+// =========================================================
+async function loadAdminFolderGrid() {
+  const grid = $("#adminFolderGrid");
+  grid.innerHTML = `<p class="empty-state">Memuat…</p>`;
+  try {
+    const items = await fetchItems(adminUploadState.path);
+    const folders = items.filter((it) => it.kind === "folder");
+    grid.innerHTML = "";
+    if (folders.length === 0) grid.innerHTML = `<p class="empty-state">Nggak ada sub-folder di sini. File langsung ke-upload ke folder ini.</p>`;
+    folders.forEach((folder) => {
+      const card = document.createElement("div");
+      card.className = "file-card";
+      card.dataset.kind = "folder";
+      card.innerHTML = `
+        <div class="file-thumb">${iconFor("folder")}</div>
+        <div><div class="file-name">${escapeHtml(folder.name)}</div><div class="file-meta">Folder</div></div>
+      `;
+      card.addEventListener("click", () => {
+        adminUploadState.pathChain.push({ id: folder.id, name: folder.name });
+        adminUploadState.path = folder.id;
+        renderAdminUploadBreadcrumb();
+        loadAdminFolderGrid();
+      });
+      grid.appendChild(card);
+    });
+  } catch (err) {
+    grid.innerHTML = `<p class="empty-state">Gagal memuat: ${err.message}</p>`;
+  }
+}
+
+function renderAdminUploadBreadcrumb() {
+  const el = $("#uploadBreadcrumb");
+  const trail = [{ id: "", name: "Home" }, ...adminUploadState.pathChain];
+  el.innerHTML = trail.map((t, i) => `<button data-index="${i}">${escapeHtml(t.name)}</button>`).join("");
+  el.querySelectorAll("button").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const idx = Number(btn.dataset.index);
+      if (idx === 0) { adminUploadState.pathChain = []; adminUploadState.path = ""; }
+      else { adminUploadState.pathChain = adminUploadState.pathChain.slice(0, idx); adminUploadState.path = trail[idx].id; }
+      renderAdminUploadBreadcrumb();
+      loadAdminFolderGrid();
+    });
+  });
+}
+
+function bindAdminUploadEvents() {
+  const note = $("#adminUploadNote");
+
+  $("#adminUploadTriggerBtn").addEventListener("click", () => $("#adminFileInput").click());
+  $("#adminFileInput").addEventListener("change", async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    note.style.color = "rgb(var(--text-dim))";
+    note.textContent = "Mengunggah " + file.name + "…";
+    try {
+      const base64Data = await fileToBase64(file);
+      await driveWrite("uploadFile", { parentId: adminUploadState.path, name: file.name, mimeType: file.type, base64Data });
+      note.style.color = "rgb(var(--g))";
+      note.textContent = "Berhasil upload: " + file.name;
+      e.target.value = "";
+    } catch (err) {
+      note.style.color = "rgb(var(--r))";
+      note.textContent = "Gagal upload: " + err.message;
+    }
+  });
+
+  $("#adminNewFolderBtn").addEventListener("click", async () => {
+    const name = prompt("Nama folder baru:");
+    if (!name) return;
+    try {
+      await driveWrite("createFolder", { parentId: adminUploadState.path, name });
+      await loadAdminFolderGrid();
+    } catch (err) {
+      note.style.color = "rgb(var(--r))";
+      note.textContent = "Gagal buat folder: " + err.message;
+    }
+  });
+}
+
 document.addEventListener("DOMContentLoaded", () => {
   $$("[data-admin-tab]").forEach((btn) => btn.addEventListener("click", () => switchAdminTab(btn.dataset.adminTab)));
+  bindAdminUploadEvents();
 });
