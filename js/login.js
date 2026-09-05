@@ -8,7 +8,9 @@ async function sendMagicLink() {
   if (!email) return;
   const btn = $("#sendLinkBtn");
   btn.disabled = true;
-  const { error } = await supabaseClient.auth.signInWithOtp({ email });
+  const basePath = window.location.pathname.replace(/login\.html$/, "");
+  const emailRedirectTo = window.location.origin + basePath + "index.html";
+  const { error } = await supabaseClient.auth.signInWithOtp({ email, options: { emailRedirectTo } });
   btn.disabled = false;
   $("#loginNote").textContent = error ? "Gagal: " + error.message : "Link masuk sudah dikirim, cek email kamu.";
 }
