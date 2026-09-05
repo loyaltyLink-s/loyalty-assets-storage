@@ -6,7 +6,7 @@
 <title>Panel Admin — Loyalty Assets Storage</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/style.css?v=20260909">
+<link rel="stylesheet" href="css/style.css?v=20260910">
 </head>
 <body>
 
@@ -63,6 +63,7 @@
         <div class="admin-tabs">
           <button class="tab-btn is-active" data-admin-tab="users">Pengguna</button>
           <button class="tab-btn" data-admin-tab="reviews">Moderasi Ulasan</button>
+          <button class="tab-btn" data-admin-tab="upload">Upload File</button>
         </div>
 
         <div class="admin-panel" id="adminUsers">
@@ -72,14 +73,29 @@
         <div class="admin-panel" id="adminReviews" hidden>
           <div class="admin-list" id="allReviewList"></div>
         </div>
+
+        <div class="admin-panel" id="adminUpload" hidden>
+          <nav class="breadcrumb" id="uploadBreadcrumb" aria-label="Lokasi folder tujuan">
+            <button data-index="0">Home</button>
+          </nav>
+
+          <div class="admin-upload-actions">
+            <button class="btn-ghost" id="adminUploadTriggerBtn">Upload file ke sini</button>
+            <button class="btn-ghost" id="adminNewFolderBtn">Buat folder baru</button>
+            <input type="file" id="adminFileInput" hidden>
+          </div>
+          <p class="popover-note" id="adminUploadNote"></p>
+
+          <div class="file-grid" id="adminFolderGrid"></div>
+        </div>
       </section>
     </main>
   </div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
-<script src="js/config.js?v=20260909"></script>
-<script src="js/common.js?v=20260909"></script>
-<script src="js/admin.js?v=20260909"></script>
+<script src="js/config.js?v=20260910"></script>
+<script src="js/common.js?v=20260910"></script>
+<script src="js/admin.js?v=20260910"></script>
 </body>
 </html>
