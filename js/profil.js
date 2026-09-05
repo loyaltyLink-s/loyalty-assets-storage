@@ -121,6 +121,12 @@ document.addEventListener("authready", (e) => {
     setTimeout(() => { window.location.href = "login.html"; }, 1200);
     return;
   }
+  if (!e.detail.profile) {
+    guard.textContent = "Profil gagal dimuat. Error: " + (appState.profileDebugError || "(tidak diketahui, cek console)");
+    guard.hidden = false;
+    card.hidden = true;
+    return;
+  }
   guard.hidden = true;
   card.hidden = false;
   fillProfileForm();
