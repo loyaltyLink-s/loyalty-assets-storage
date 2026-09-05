@@ -6,7 +6,8 @@
 <title>Masuk — Loyalty Assets Storage</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Sora:wght@600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/style.css?v=20260914">
+<link rel="stylesheet" href="css/style.css?v=20260915">
+<script src="https://challenges.cloudflare.com/turnstile/v0/api.js?onload=onTurnstileLoad" async defer></script>
 </head>
 <body>
 
@@ -24,6 +25,7 @@
 
     <label for="emailInput">Email</label>
     <input type="email" id="emailInput" placeholder="nama@email.com">
+    <div id="turnstileWidget" class="turnstile-wrap"></div>
     <button class="btn-solid" id="sendLinkBtn">Kirim link masuk</button>
     <p class="popover-note" id="loginNote"></p>
 
@@ -37,8 +39,8 @@
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
-<script src="js/config.js?v=20260914"></script>
-<script src="js/common.js?v=20260914"></script>
-<script src="js/login.js?v=20260914"></script>
+<script src="js/config.js?v=20260915"></script>
+<script src="js/common.js?v=20260915"></script>
+<script src="js/login.js?v=20260915"></script>
 </body>
 </html>
