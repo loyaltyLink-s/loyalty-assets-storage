@@ -48,16 +48,39 @@ function fileToBase64(file) {
   });
 }
 
-// klik = langsung download. Drive sendiri yang atur header download-nya
-// selama file di-share "Anyone with link - Viewer" (sudah otomatis dari uploadFile).
-function forceDownload(item) {
-  const a = document.createElement("a");
-  a.href = item.downloadUrl;
-  a.target = "_blank";
-  a.rel = "noopener";
-  document.body.appendChild(a);
-  a.click();
-  a.remove();
+// ambil file via Apps Script (base64), bukan link Drive langsung -> nggak ada
+// popup "tidak bisa scan virus" dari Google, karena Drive-nya nggak pernah
+// diakses langsung sama browser user.
+async function forceDownload(item) {
+  const btn = $("#downloadBtn");
+  const original = btn.textContent;
+  btn.textContent = "Menyiapkan…";
+  btn.disabled = true;
+  try {
+    const url = `${CONFIG.APPS_SCRIPT_URL}?action=download&fileId=${encodeURIComponent(item.id)}`;
+    const res = await fetch(url);
+    const data = await res.json();
+    if (data.error) throw new Error(data.error);
+
+    const byteChars = atob(data.base64);
+    const byteNumbers = new Array(byteChars.length);
+    for (let i = 0; i < byteChars.length; i++) byteNumbers[i] = byteChars.charCodeAt(i);
+    const blob = new Blob([new Uint8Array(byteNumbers)], { type: data.mimeType });
+
+    const blobUrl = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = blobUrl;
+    a.download = data.name;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(blobUrl), 10000);
+  } catch (err) {
+    alert("Gagal download: " + err.message);
+  } finally {
+    btn.textContent = original;
+    btn.disabled = false;
+  }
 }
 
 // ---------- RENDER: grid, breadcrumb ----------
