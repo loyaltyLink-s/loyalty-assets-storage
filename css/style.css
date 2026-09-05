@@ -277,7 +277,17 @@ a{ color:inherit; text-decoration:none; }
   cursor:pointer;
   display:flex; flex-direction:column; gap:8px;
   transition: border-color .15s ease;
+  position:relative;
 }
+.file-card-body{ min-width:0; }
+.file-card-delete{
+  position:absolute; top:6px; right:6px;
+  width:22px; height:22px; border-radius:50%;
+  background: rgb(var(--surface-2)); border: var(--border-w) solid rgb(var(--border));
+  color: rgb(var(--r)); font-size:12px; line-height:1; cursor:pointer;
+  display:flex; align-items:center; justify-content:center;
+}
+.file-grid.is-list .file-card-delete{ position:static; margin-left:auto; }
 .file-card:hover{ border-color: rgb(var(--text-dim)); }
 .file-grid.is-list .file-card{ flex-direction:row; align-items:center; gap:12px; }
 
