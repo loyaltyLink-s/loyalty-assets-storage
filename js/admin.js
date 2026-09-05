@@ -120,32 +120,39 @@ async function loadAdminFolderGrid() {
   grid.innerHTML = `<p class="empty-state">Memuat…</p>`;
   try {
     const items = await fetchItems(adminUploadState.path);
-    const folders = items.filter((it) => it.kind === "folder");
     grid.innerHTML = "";
-    if (folders.length === 0) grid.innerHTML = `<p class="empty-state">Nggak ada sub-folder di sini. File langsung ke-upload ke folder ini.</p>`;
-    folders.forEach((folder) => {
+    if (items.length === 0) grid.innerHTML = `<p class="empty-state">Folder ini masih kosong.</p>`;
+
+    items.forEach((item) => {
+      const isFolder = item.kind === "folder";
       const card = document.createElement("div");
       card.className = "file-card";
-      card.dataset.kind = "folder";
+      card.dataset.kind = item.kind;
       card.innerHTML = `
-        <div class="file-thumb">${iconFor("folder")}</div>
-        <div class="file-card-body"><div class="file-name">${escapeHtml(folder.name)}</div><div class="file-meta">Folder</div></div>
-        <button class="file-card-delete" title="Hapus folder" aria-label="Hapus folder">✕</button>
+        <div class="file-thumb">${iconFor(item.kind)}</div>
+        <div class="file-card-body">
+          <div class="file-name">${escapeHtml(item.name)}</div>
+          <div class="file-meta">${isFolder ? "Folder" : formatSize(item.size)}</div>
+        </div>
+        <button class="file-card-delete" title="Hapus" aria-label="Hapus ${isFolder ? "folder" : "file"}">✕</button>
       `;
-      card.addEventListener("click", () => {
-        adminUploadState.pathChain.push({ id: folder.id, name: folder.name });
-        adminUploadState.path = folder.id;
-        renderAdminUploadBreadcrumb();
-        loadAdminFolderGrid();
-      });
+      if (isFolder) {
+        card.addEventListener("click", () => {
+          adminUploadState.pathChain.push({ id: item.id, name: item.name });
+          adminUploadState.path = item.id;
+          renderAdminUploadBreadcrumb();
+          loadAdminFolderGrid();
+        });
+      }
       card.querySelector(".file-card-delete").addEventListener("click", async (e) => {
         e.stopPropagation();
-        if (!confirm(`Hapus folder "${folder.name}" beserta semua isinya?`)) return;
+        const label = isFolder ? `folder "${item.name}" beserta semua isinya` : `file "${item.name}"`;
+        if (!confirm(`Hapus ${label}?`)) return;
         try {
-          await driveWrite("deleteItem", { fileId: folder.id });
+          await driveWrite("deleteItem", { fileId: item.id });
           await loadAdminFolderGrid();
         } catch (err) {
-          alert("Gagal hapus folder: " + err.message);
+          alert("Gagal hapus: " + err.message);
         }
       });
       grid.appendChild(card);
