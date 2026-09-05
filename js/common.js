@@ -54,6 +54,36 @@ function safeProfile(row) {
 }
 
 // =========================================================
+// DRIVE — dipakai di halaman Data & Panel Admin
+// =========================================================
+async function fetchItems(folderId) {
+  const url = `${CONFIG.APPS_SCRIPT_URL}?action=list&folderId=${encodeURIComponent(folderId || "")}`;
+  const res = await fetch(url);
+  const data = await res.json();
+  return data.items || [];
+}
+
+async function driveWrite(action, payload) {
+  if (!appState.session) throw new Error("Belum masuk");
+  const res = await fetch(CONFIG.APPS_SCRIPT_URL, {
+    method: "POST",
+    body: JSON.stringify({ action, accessToken: appState.session.access_token, ...payload }),
+  });
+  const data = await res.json();
+  if (data.error) throw new Error(data.error);
+  return data;
+}
+
+function fileToBase64(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result.split(",")[1]);
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
+// =========================================================
 // SESSION & TOPBAR/SIDEBAR (dipakai tiap halaman)
 // =========================================================
 async function refreshSession() {
