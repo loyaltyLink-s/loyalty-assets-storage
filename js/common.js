@@ -83,6 +83,18 @@ function fileToBase64(file) {
   });
 }
 
+// dipakai di kartu file/folder (halaman Data & Panel Admin) buat ganti nama
+async function renameItemPrompt(item, onSuccess) {
+  const newName = prompt("Nama baru:", item.name);
+  if (!newName || newName === item.name) return;
+  try {
+    await driveWrite("renameItem", { fileId: item.id, newName });
+    if (onSuccess) onSuccess();
+  } catch (err) {
+    alert("Gagal ganti nama: " + err.message);
+  }
+}
+
 // =========================================================
 // SESSION & TOPBAR/SIDEBAR (dipakai tiap halaman)
 // =========================================================
