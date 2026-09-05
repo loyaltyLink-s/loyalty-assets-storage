@@ -62,14 +62,16 @@ async function refreshSession() {
   appState.session = session;
 
   if (session) {
-    let { data: profile, error } = await supabaseClient
+    let { data: profile, error: selectError } = await supabaseClient
       .from("profiles").select("*").eq("id", session.user.id).single();
+
+    if (selectError) console.error("[DEBUG] gagal select profiles:", selectError.message, selectError);
 
     // baris profil belum ada (mis. trigger gagal jalan) -> buat otomatis, jangan biarkan null
     if (!profile) {
       const meta = session.user.user_metadata || {};
       const fallbackUsername = "user" + session.user.id.replace(/-/g, "").slice(0, 8);
-      const { data: created } = await supabaseClient
+      const { data: created, error: insertError } = await supabaseClient
         .from("profiles")
         .insert({
           id: session.user.id,
@@ -79,9 +81,11 @@ async function refreshSession() {
         })
         .select()
         .single();
+      if (insertError) console.error("[DEBUG] gagal insert profiles (self-heal):", insertError.message, insertError);
       profile = created;
     }
     appState.profile = profile;
+    appState.profileDebugError = selectError ? selectError.message : null;
   } else {
     appState.profile = null;
   }
