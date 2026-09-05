@@ -1,18 +1,40 @@
 /* =========================================================
-   LOGIN — magic link + OAuth (Google, GitHub)
+   LOGIN — magic link + OAuth (Google, GitHub) + Turnstile captcha
    ========================================================= */
+
+let turnstileToken = null;
+let turnstileWidgetId = null;
+
+function renderTurnstile() {
+  if (typeof turnstile === "undefined" || !CONFIG.TURNSTILE_SITE_KEY) return;
+  turnstileWidgetId = turnstile.render("#turnstileWidget", {
+    sitekey: CONFIG.TURNSTILE_SITE_KEY,
+    callback: (token) => { turnstileToken = token; },
+    "expired-callback": () => { turnstileToken = null; },
+  });
+}
+window.onTurnstileLoad = renderTurnstile;
 
 async function sendMagicLink() {
   if (!supabaseClient) return;
   const email = $("#emailInput").value.trim();
   if (!email) return;
+  if (CONFIG.TURNSTILE_SITE_KEY && !turnstileToken) {
+    $("#loginNote").textContent = "Selesaikan verifikasi captcha dulu ya.";
+    return;
+  }
   const btn = $("#sendLinkBtn");
   btn.disabled = true;
   const basePath = window.location.pathname.replace(/login\.html$/, "");
   const emailRedirectTo = window.location.origin + basePath + "index.html";
-  const { error } = await supabaseClient.auth.signInWithOtp({ email, options: { emailRedirectTo } });
+  const { error } = await supabaseClient.auth.signInWithOtp({
+    email,
+    options: { emailRedirectTo, captchaToken: turnstileToken || undefined },
+  });
   btn.disabled = false;
   $("#loginNote").textContent = error ? "Gagal: " + error.message : "Link masuk sudah dikirim, cek email kamu.";
+  if (turnstileWidgetId !== null) turnstile.reset(turnstileWidgetId);
+  turnstileToken = null;
 }
 
 async function loginWithProvider(provider) {
