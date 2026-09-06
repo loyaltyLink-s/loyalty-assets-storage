@@ -203,12 +203,49 @@ async function loadReviews(fileId) {
   if (!supabaseClient) { $("#reviewList").innerHTML = `<p class="empty-state">Fitur ulasan belum siap.</p>`; return; }
   const { data, error } = await supabaseClient
     .from("reviews")
-    .select("id, content, parent_id, reply_to_username, is_hidden, created_at, profiles(username, avatar_url)")
+    .select("id, user_id, content, parent_id, reply_to_username, is_hidden, created_at, profiles(username, avatar_url)")
     .eq("file_id", fileId)
     .order("created_at", { ascending: true });
 
   if (error) { $("#reviewList").innerHTML = `<p class="empty-state">Gagal memuat ulasan: ${error.message}</p>`; return; }
   renderReviewTree(data || []);
+}
+
+function canEditReview(item) {
+  return isLoggedIn() && appState.profile && item.user_id === appState.profile.id;
+}
+function canDeleteReview(item) {
+  return isLoggedIn() && appState.profile && (item.user_id === appState.profile.id || isAdmin());
+}
+
+function reviewActionsHtml(item) {
+  const btns = [];
+  if (isLoggedIn()) btns.push(`<button data-action="reply">Balas</button>`);
+  if (canEditReview(item)) btns.push(`<button data-action="edit">Edit</button>`);
+  if (canDeleteReview(item)) btns.push(`<button data-action="delete-review">Hapus</button>`);
+  return btns.join("");
+}
+
+function bindReviewItemActions(el, item, textEl, onChanged) {
+  const editBtn = el.querySelector('[data-action="edit"]');
+  if (editBtn) {
+    editBtn.addEventListener("click", async () => {
+      const newContent = prompt("Edit ulasan:", item.content);
+      if (!newContent || newContent === item.content) return;
+      const { error } = await supabaseClient.from("reviews").update({ content: newContent }).eq("id", item.id);
+      if (error) { alert("Gagal edit: " + error.message); return; }
+      textEl.textContent = newContent;
+    });
+  }
+  const deleteBtn = el.querySelector('[data-action="delete-review"]');
+  if (deleteBtn) {
+    deleteBtn.addEventListener("click", async () => {
+      if (!confirm("Hapus ulasan ini?")) return;
+      const { error } = await supabaseClient.from("reviews").delete().eq("id", item.id);
+      if (error) { alert("Gagal hapus: " + error.message); return; }
+      onChanged();
+    });
+  }
 }
 
 function renderReviewTree(rows) {
@@ -239,11 +276,13 @@ function renderReviewTree(rows) {
       </div>
       <p class="review-text">${escapeHtml(review.content)}</p>
       <div class="review-actions">
-        ${isLoggedIn() ? `<button data-action="reply">Balas</button>` : ""}
+        ${reviewActionsHtml(review)}
         ${replies.length > 0 ? `<button data-action="toggle">${replies.length} balasan • sembunyikan</button>` : ""}
       </div>
       <div class="reply-list"></div>
     `;
+
+    bindReviewItemActions(wrap, review, wrap.querySelector(".review-text"), () => loadReviews(dataState.activeModalItem.id));
 
     const replyListEl = wrap.querySelector(".reply-list");
     replies.forEach((reply) => {
@@ -256,13 +295,11 @@ function renderReviewTree(rows) {
           <span class="review-user">@${escapeHtml(replyProfile.username || "pengguna")} <span class="reply-target">&gt; @${escapeHtml(reply.reply_to_username)}</span></span>
         </div>
         <p class="review-text">${escapeHtml(reply.content)}</p>
-        <div class="review-actions">
-          ${isLoggedIn() ? `<button data-action="reply">Balas</button>` : ""}
-        </div>
+        <div class="review-actions">${reviewActionsHtml(reply)}</div>
       `;
-      if (isLoggedIn()) {
-        r.querySelector('[data-action="reply"]').addEventListener("click", () => startReply(review.id, replyProfile.username));
-      }
+      const replyBtnEl = r.querySelector('[data-action="reply"]');
+      if (replyBtnEl) replyBtnEl.addEventListener("click", () => startReply(review.id, replyProfile.username));
+      bindReviewItemActions(r, reply, r.querySelector(".review-text"), () => loadReviews(dataState.activeModalItem.id));
       replyListEl.appendChild(r);
     });
 
