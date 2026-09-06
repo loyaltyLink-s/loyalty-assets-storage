@@ -3,11 +3,26 @@
    Butuh common.js dimuat sebelum file ini.
    ========================================================= */
 
+const VIEW_STORAGE_KEY = "loyaltyAssetsStorage:viewMode";
+
+function loadSavedView() {
+  try {
+    const saved = localStorage.getItem(VIEW_STORAGE_KEY);
+    return saved === "grid" || saved === "list" ? saved : "list";
+  } catch (err) {
+    return "list"; // localStorage nggak tersedia (mis. mode private ketat) -> pakai default
+  }
+}
+
+function saveView(mode) {
+  try { localStorage.setItem(VIEW_STORAGE_KEY, mode); } catch (err) { /* abaikan kalau gagal simpan */ }
+}
+
 let dataState = {
   path: "",
   pathChain: [],
   items: [],
-  view: "grid",
+  view: loadSavedView(),
   query: "",
   activeModalItem: null,
   replyTarget: null,
@@ -354,9 +369,12 @@ function bindDataEvents() {
     const btn = e.target.closest("button");
     if (!btn) return;
     dataState.view = btn.dataset.mode;
+    saveView(dataState.view);
     $$("#viewToggle button").forEach((b) => b.classList.toggle("is-active", b === btn));
     renderGrid();
   });
+  // sinkronkan tombol aktif dengan preferensi yang tersimpan (localStorage) saat halaman dibuka
+  $$("#viewToggle button").forEach((b) => b.classList.toggle("is-active", b.dataset.mode === dataState.view));
 
   $("#manageBtn").addEventListener("click", () => { $("#managePopover").hidden = !$("#managePopover").hidden; });
   document.addEventListener("click", (e) => {
