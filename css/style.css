@@ -280,6 +280,13 @@ svg{ width:20px; height:20px; fill:none; stroke:currentColor; stroke-width:1.6; 
 .file-card-action:hover{ transform: scale(1.15); border-color: var(--accent-violet); }
 .file-card-action.file-card-delete{ color: var(--accent-pink); }
 .file-card-action.file-card-delete:hover{ border-color: var(--accent-pink); }
+
+/* ikon gambar kustom (mis. tombol sembunyikan folder) -- defaultnya hitam,
+   otomatis jadi putih pas mode gelap biar tetap kelihatan */
+.icon-invert{ width:13px; height:13px; display:block; object-fit:contain; }
+@media (prefers-color-scheme: dark){
+  .icon-invert{ filter: invert(1); }
+}
 .file-grid.is-list .file-card-actions{ position:static; margin-left:auto; }
 
 .empty-state{ text-align:center; color: var(--text-muted); padding:56px 0; font-size:14px; }
