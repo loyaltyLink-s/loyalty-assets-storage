@@ -55,10 +55,31 @@ document.addEventListener("authready", (e) => {
   if (e.detail.session) window.location.href = "index.html";
 });
 
+async function applyLoginSettings() {
+  if (!supabaseClient) return;
+  const { data, error } = await supabaseClient.from("app_settings").select("*").eq("id", 1).single();
+  if (error || !data) return; // gagal ambil pengaturan -> biarkan semua metode tampil (fallback aman)
+
+  if (!data.login_magic_link) {
+    $("#emailInput").hidden = true;
+    $("#sendLinkBtn").hidden = true;
+    const emailLabel = document.querySelector('label[for="emailInput"]');
+    if (emailLabel) emailLabel.hidden = true;
+    $("#turnstileWidget").hidden = true;
+  }
+  if (!data.login_google) $("#googleLoginBtn").hidden = true;
+  if (!data.login_github) $("#githubLoginBtn").hidden = true;
+
+  const allOAuthHidden = !data.login_google && !data.login_github;
+  const divider = $(".popover-divider");
+  if (divider && allOAuthHidden) divider.hidden = true;
+}
+
 function bindLoginEvents() {
   $("#sendLinkBtn").addEventListener("click", sendMagicLink);
   $("#googleLoginBtn").addEventListener("click", () => loginWithProvider("google"));
   $("#githubLoginBtn").addEventListener("click", () => loginWithProvider("github"));
+  applyLoginSettings();
 }
 
 document.addEventListener("DOMContentLoaded", bindLoginEvents);
