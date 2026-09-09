@@ -120,7 +120,7 @@ function renderGrid() {
       </div>
       ${isAdmin() ? `
         <div class="file-card-actions">
-          ${item.kind === "folder" ? `<button class="file-card-action" data-action="hide" title="Sembunyikan folder" aria-label="Sembunyikan folder">🙈</button>` : ""}
+          ${item.kind === "folder" ? `<button class="file-card-action" data-action="hide" title="Sembunyikan folder" aria-label="Sembunyikan folder"><img class="icon-invert" src="https://lh3.googleusercontent.com/d/1Dw9x6ebGQjQJAYqZNEP6IhrokgTF4ZyY" alt=""></button>` : ""}
           <button class="file-card-action" data-action="rename" title="Ganti nama" aria-label="Ganti nama">✎</button>
           <button class="file-card-action file-card-delete" data-action="delete" title="Hapus" aria-label="Hapus">✕</button>
         </div>` : ""}
