@@ -29,8 +29,12 @@ function switchAdminTab(tab) {
   $("#adminUsers").hidden = tab !== "users";
   $("#adminReviews").hidden = tab !== "reviews";
   $("#adminUpload").hidden = tab !== "upload";
+  $("#adminHidden").hidden = tab !== "hidden";
+  $("#adminSettings").hidden = tab !== "settings";
   if (tab === "reviews") loadAdminReviews();
   if (tab === "upload") loadAdminFolderGrid();
+  if (tab === "hidden") loadHiddenFolders();
+  if (tab === "settings") loadLoginSettings();
 }
 
 async function loadAdminUsers() {
@@ -218,6 +222,77 @@ function bindAdminUploadEvents() {
       note.style.color = "rgb(var(--r))";
       note.textContent = "Gagal buat folder: " + err.message;
     }
+  });
+}
+
+// =========================================================
+// TAB FOLDER TERSEMBUNYI
+// =========================================================
+async function loadHiddenFolders() {
+  const list = $("#hiddenFolderList");
+  list.innerHTML = `<p class="empty-state">Memuat…</p>`;
+  const { data, error } = await supabaseClient
+    .from("hidden_folders")
+    .select("folder_id, folder_name, created_at")
+    .order("created_at", { ascending: false });
+
+  if (error) { list.innerHTML = `<p class="empty-state">Gagal memuat: ${error.message}</p>`; return; }
+
+  list.innerHTML = "";
+  if (!data || data.length === 0) { list.innerHTML = `<p class="empty-state">Belum ada folder yang disembunyikan.</p>`; return; }
+
+  data.forEach((row) => {
+    const item = document.createElement("div");
+    item.className = "admin-row";
+    item.innerHTML = `
+      <div class="admin-row-main">
+        <div class="admin-row-name">${escapeHtml(row.folder_name || "(tanpa nama)")}</div>
+        <div class="admin-row-sub">${row.folder_id}</div>
+      </div>
+      <button class="btn-ghost">Tampilkan lagi</button>
+    `;
+    item.querySelector("button").addEventListener("click", async () => {
+      const { error: delError } = await supabaseClient.from("hidden_folders").delete().eq("folder_id", row.folder_id);
+      if (delError) { alert("Gagal: " + delError.message); return; }
+      await loadHiddenFolders();
+    });
+    list.appendChild(item);
+  });
+}
+
+// =========================================================
+// TAB PENGATURAN — nyala/matikan metode login
+// =========================================================
+const LOGIN_SETTINGS_LABELS = {
+  login_magic_link: "Magic Link (email)",
+  login_google: "Login Google",
+  login_github: "Login GitHub",
+};
+
+async function loadLoginSettings() {
+  const list = $("#loginSettingsList");
+  list.innerHTML = `<p class="empty-state">Memuat…</p>`;
+  const { data, error } = await supabaseClient.from("app_settings").select("*").eq("id", 1).single();
+  if (error) { list.innerHTML = `<p class="empty-state">Gagal memuat: ${error.message}</p>`; return; }
+
+  list.innerHTML = "";
+  Object.keys(LOGIN_SETTINGS_LABELS).forEach((key) => {
+    const row = document.createElement("div");
+    row.className = "admin-row";
+    const enabled = data[key];
+    row.innerHTML = `
+      <div class="admin-row-main">
+        <div class="admin-row-name">${LOGIN_SETTINGS_LABELS[key]}</div>
+      </div>
+      <span class="role-badge ${enabled ? "is-admin" : ""}">${enabled ? "Aktif" : "Nonaktif"}</span>
+      <button class="btn-ghost">${enabled ? "Matikan" : "Aktifkan"}</button>
+    `;
+    row.querySelector("button").addEventListener("click", async () => {
+      const { error: updateError } = await supabaseClient.from("app_settings").update({ [key]: !enabled }).eq("id", 1);
+      if (updateError) { alert("Gagal: " + updateError.message); return; }
+      await loadLoginSettings();
+    });
+    list.appendChild(row);
   });
 }
 
