@@ -64,6 +64,8 @@
           <button class="tab-btn is-active" data-admin-tab="users">Pengguna</button>
           <button class="tab-btn" data-admin-tab="reviews">Moderasi Ulasan</button>
           <button class="tab-btn" data-admin-tab="upload">Upload File</button>
+          <button class="tab-btn" data-admin-tab="hidden">Folder Tersembunyi</button>
+          <button class="tab-btn" data-admin-tab="settings">Pengaturan</button>
         </div>
 
         <div class="admin-panel" id="adminUsers">
@@ -87,6 +89,16 @@
           <p class="popover-note" id="adminUploadNote"></p>
 
           <div class="file-grid" id="adminFolderGrid"></div>
+        </div>
+
+        <div class="admin-panel" id="adminHidden" hidden>
+          <p class="dashboard-hint">Folder di bawah ini tersembunyi dari listing. Link langsung ke file di dalamnya tetap bisa diakses siapa saja.</p>
+          <div class="admin-list" id="hiddenFolderList"></div>
+        </div>
+
+        <div class="admin-panel" id="adminSettings" hidden>
+          <p class="dashboard-hint">Matikan metode login tertentu kalau perlu (mis. lagi ada masalah OAuth).</p>
+          <div class="admin-list" id="loginSettingsList"></div>
         </div>
       </section>
     </main>
