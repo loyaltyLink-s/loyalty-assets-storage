@@ -120,6 +120,7 @@ function renderGrid() {
       </div>
       ${isAdmin() ? `
         <div class="file-card-actions">
+          ${item.kind === "folder" ? `<button class="file-card-action" data-action="hide" title="Sembunyikan folder" aria-label="Sembunyikan folder">🙈</button>` : ""}
           <button class="file-card-action" data-action="rename" title="Ganti nama" aria-label="Ganti nama">✎</button>
           <button class="file-card-action file-card-delete" data-action="delete" title="Hapus" aria-label="Hapus">✕</button>
         </div>` : ""}
@@ -129,6 +130,18 @@ function renderGrid() {
       else openModal(item);
     });
 
+    const hideBtn = card.querySelector('[data-action="hide"]');
+    if (hideBtn) {
+      hideBtn.addEventListener("click", async (e) => {
+        e.stopPropagation();
+        if (!confirm(`Sembunyikan folder "${item.name}"? Folder & isinya nggak akan muncul di listing, tapi link langsung ke file di dalamnya tetap bisa diakses siapa saja.`)) return;
+        const { error } = await supabaseClient.from("hidden_folders").insert({
+          folder_id: item.id, folder_name: item.name, hidden_by: appState.profile.id,
+        });
+        if (error) { alert("Gagal sembunyikan: " + error.message); return; }
+        await refreshGrid();
+      });
+    }
     const renameBtn = card.querySelector('[data-action="rename"]');
     if (renameBtn) {
       renameBtn.addEventListener("click", (e) => {
@@ -413,6 +426,19 @@ function bindDataEvents() {
       closeModal();
       await refreshGrid();
     } catch (err) { alert("Gagal hapus: " + err.message); }
+  });
+
+  $("#copyLinkBtn").addEventListener("click", async () => {
+    if (!dataState.activeModalItem) return;
+    const btn = $("#copyLinkBtn");
+    const original = btn.textContent;
+    try {
+      await navigator.clipboard.writeText(dataState.activeModalItem.shareUrl);
+      btn.textContent = "Tersalin!";
+    } catch (err) {
+      prompt("Salin manual link ini:", dataState.activeModalItem.shareUrl);
+    }
+    setTimeout(() => { btn.textContent = original; }, 1500);
   });
 
   $("#shareBtn").addEventListener("click", () => {
