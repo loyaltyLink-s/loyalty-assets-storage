@@ -136,10 +136,10 @@ function renderGrid() {
         e.stopPropagation();
         if (!confirm(`Sembunyikan folder "${item.name}"? Folder & isinya nggak akan muncul di listing, tapi link langsung ke file di dalamnya tetap bisa diakses siapa saja.`)) return;
         
-        // 1. CEK DULU APAKAH FOLDER SUDAH ADA DI TABEL
+        // Cek ketersediaan di tabel menggunakan folder_id
         const { data: existing, error: checkError } = await supabaseClient
           .from("hidden_folders")
-          .select("id")
+          .select("folder_id")
           .eq("folder_id", item.id)
           .maybeSingle();
 
@@ -154,7 +154,7 @@ function renderGrid() {
           return;
         }
 
-        // 2. JIKA BELUM ADA, BARU INSERT
+        // Lakukan insert jika belum terdaftar
         const { error: insertError } = await supabaseClient.from("hidden_folders").insert({
           folder_id: item.id,
           folder_name: item.name,
