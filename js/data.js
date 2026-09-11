@@ -136,20 +136,40 @@ function renderGrid() {
         e.stopPropagation();
         if (!confirm(`Sembunyikan folder "${item.name}"? Folder & isinya nggak akan muncul di listing, tapi link langsung ke file di dalamnya tetap bisa diakses siapa saja.`)) return;
         
-        // MENGGUNAKAN UPSERT UNTUK MENCEGAH DUPLICATE KEY CONSTRAINT ERROR
-        const { error } = await supabaseClient.from("hidden_folders").upsert(
-          {
-            folder_id: item.id,
-            folder_name: item.name,
-            hidden_by: appState.profile.id,
-          },
-          { onConflict: "folder_id" }
-        );
+        // 1. CEK DULU APAKAH FOLDER SUDAH ADA DI TABEL
+        const { data: existing, error: checkError } = await supabaseClient
+          .from("hidden_folders")
+          .select("id")
+          .eq("folder_id", item.id)
+          .maybeSingle();
 
-        if (error) { alert("Gagal sembunyikan: " + error.message); return; }
+        if (checkError) {
+          alert("Gagal memeriksa status folder: " + checkError.message);
+          return;
+        }
+
+        if (existing) {
+          alert(`Folder "${item.name}" memang sudah disembunyikan sebelumnya.`);
+          await refreshGrid();
+          return;
+        }
+
+        // 2. JIKA BELUM ADA, BARU INSERT
+        const { error: insertError } = await supabaseClient.from("hidden_folders").insert({
+          folder_id: item.id,
+          folder_name: item.name,
+          hidden_by: appState.profile.id,
+        });
+
+        if (insertError) { 
+          alert("Gagal sembunyikan: " + insertError.message); 
+          return; 
+        }
+
         await refreshGrid();
       });
     }
+
     const renameBtn = card.querySelector('[data-action="rename"]');
     if (renameBtn) {
       renameBtn.addEventListener("click", (e) => {
@@ -394,7 +414,6 @@ function bindDataEvents() {
     $$("#viewToggle button").forEach((b) => b.classList.toggle("is-active", b === btn));
     renderGrid();
   });
-  // sinkronkan tombol aktif dengan preferensi yang tersimpan (localStorage) saat halaman dibuka
   $$("#viewToggle button").forEach((b) => b.classList.toggle("is-active", b.dataset.mode === dataState.view));
 
   $("#manageBtn").addEventListener("click", () => { $("#managePopover").hidden = !$("#managePopover").hidden; });
