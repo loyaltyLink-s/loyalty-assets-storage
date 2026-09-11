@@ -135,9 +135,17 @@ function renderGrid() {
       hideBtn.addEventListener("click", async (e) => {
         e.stopPropagation();
         if (!confirm(`Sembunyikan folder "${item.name}"? Folder & isinya nggak akan muncul di listing, tapi link langsung ke file di dalamnya tetap bisa diakses siapa saja.`)) return;
-        const { error } = await supabaseClient.from("hidden_folders").insert({
-          folder_id: item.id, folder_name: item.name, hidden_by: appState.profile.id,
-        });
+        
+        // MENGGUNAKAN UPSERT UNTUK MENCEGAH DUPLICATE KEY CONSTRAINT ERROR
+        const { error } = await supabaseClient.from("hidden_folders").upsert(
+          {
+            folder_id: item.id,
+            folder_name: item.name,
+            hidden_by: appState.profile.id,
+          },
+          { onConflict: "folder_id" }
+        );
+
         if (error) { alert("Gagal sembunyikan: " + error.message); return; }
         await refreshGrid();
       });
