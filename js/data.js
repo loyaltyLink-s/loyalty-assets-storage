@@ -1,6 +1,5 @@
 /* =========================================================
    DATA — file/folder browser (grid, breadcrumb, modal, upload, ulasan)
-   Butuh common.js dimuat sebelum file ini.
    ========================================================= */
 
 const VIEW_STORAGE_KEY = "loyaltyAssetsStorage:viewMode";
@@ -10,12 +9,12 @@ function loadSavedView() {
     const saved = localStorage.getItem(VIEW_STORAGE_KEY);
     return saved === "grid" || saved === "list" ? saved : "list";
   } catch (err) {
-    return "list"; // localStorage nggak tersedia (mis. mode private ketat) -> pakai default
+    return "list";
   }
 }
 
 function saveView(mode) {
-  try { localStorage.setItem(VIEW_STORAGE_KEY, mode); } catch (err) { /* abaikan kalau gagal simpan */ }
+  try { localStorage.setItem(VIEW_STORAGE_KEY, mode); } catch (err) {}
 }
 
 let dataState = {
@@ -36,9 +35,6 @@ async function fetchTextContent(fileId) {
   return data.content || "";
 }
 
-// ambil file via Apps Script (base64), bukan link Drive langsung -> nggak ada
-// popup "tidak bisa scan virus" dari Google, karena Drive-nya nggak pernah
-// diakses langsung sama browser user.
 async function forceDownload(item) {
   const btn = $("#downloadBtn");
   const original = btn.textContent;
@@ -136,7 +132,6 @@ function renderGrid() {
         e.stopPropagation();
         if (!confirm(`Sembunyikan folder "${item.name}"? Folder & isinya nggak akan muncul di listing, tapi link langsung ke file di dalamnya tetap bisa diakses siapa saja.`)) return;
         
-        // Cek ketersediaan di tabel menggunakan folder_id
         const { data: existing, error: checkError } = await supabaseClient
           .from("hidden_folders")
           .select("folder_id")
@@ -154,7 +149,6 @@ function renderGrid() {
           return;
         }
 
-        // Lakukan insert jika belum terdaftar
         const { error: insertError } = await supabaseClient.from("hidden_folders").insert({
           folder_id: item.id,
           folder_name: item.name,
@@ -228,11 +222,8 @@ async function openModal(item) {
     preview.innerHTML = `<iframe src="${item.viewUrl}" width="100%" height="280" allow="autoplay" style="border:0;"></iframe>`;
   } else if (item.kind === "audio") {
     preview.innerHTML = `
-      <div style="width:100%; padding:24px 16px; display:flex; justify-content:center; align-items:center;">
-        <audio controls controlsList="nodownload" style="width:100%; max-width:420px; outline:none;">
-          <source src="${item.downloadUrl}" type="audio/mpeg">
-          Browser kamu tidak mendukung pemutar audio.
-        </audio>
+      <div class="audio-iframe-wrap">
+        <iframe src="${item.viewUrl}" allow="autoplay"></iframe>
       </div>`;
   } else if (item.kind === "image") {
     preview.innerHTML = `<img src="${item.imageViewUrl}" alt="${escapeHtml(item.name)}">`;
