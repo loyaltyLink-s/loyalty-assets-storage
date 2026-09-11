@@ -224,8 +224,16 @@ async function openModal(item) {
   txtPreview.hidden = true;
   preview.innerHTML = "";
 
-  if (item.kind === "video" || item.kind === "audio") {
-    preview.innerHTML = `<iframe src="${item.viewUrl}" width="100%" height="${item.kind === "video" ? 280 : 90}" allow="autoplay" style="border:0;"></iframe>`;
+  if (item.kind === "video") {
+    preview.innerHTML = `<iframe src="${item.viewUrl}" width="100%" height="280" allow="autoplay" style="border:0;"></iframe>`;
+  } else if (item.kind === "audio") {
+    preview.innerHTML = `
+      <div style="width:100%; padding:24px 16px; display:flex; justify-content:center; align-items:center;">
+        <audio controls controlsList="nodownload" style="width:100%; max-width:420px; outline:none;">
+          <source src="${item.downloadUrl}" type="audio/mpeg">
+          Browser kamu tidak mendukung pemutar audio.
+        </audio>
+      </div>`;
   } else if (item.kind === "image") {
     preview.innerHTML = `<img src="${item.imageViewUrl}" alt="${escapeHtml(item.name)}">`;
   } else if (item.kind === "text") {
