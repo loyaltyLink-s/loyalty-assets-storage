@@ -4,5 +4,5 @@
 const CONFIG = {
   SUPABASE_URL: "https://jjvariwckcbsamfgzeno.supabase.co",
   SUPABASE_ANON_KEY: "sb_publishable_we79MaWmkimqkDUI-QDl6Q_rH3Mk_OR",
-  APPS_SCRIPT_URL: "https://script.google.com/macros/s/AKfycbxqdpDm9Q72UoiG-Nwj0lQSCsthvxwMnE8rZcrDGFvAkTvSerYn3kHbWQ2NpFSoWfIrvQ/exec",
+  APPS_SCRIPT_URL: "https://script.google.com/macros/s/AKfycbw-PLHhWhTlTxIPo3QGVKNunxXM5SnONVQVCzutp0KCCQmAX_mKYn5ga_Yj6BZ597fEHg/exec",
 };
