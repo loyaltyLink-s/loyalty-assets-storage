@@ -104,7 +104,7 @@ a:focus,
   background: var(--accent-gradient); opacity:.6;
 }
 
-.sidebar-brand{ display:flex; align-items:center; justify-content:space-between; gap:10px; padding:8px 8px 20px; }
+.sidebar-brand{ display:flex; align-items:center; gap:10px; padding:8px 8px 20px; }
 .brand-mark{ display:flex; gap:3px; flex-shrink:0; }
 .brand-mark .dot{ width:8px; height:8px; border-radius:50%; display:block; }
 .dot-r{ background: var(--kind-video); }
@@ -156,14 +156,27 @@ a:focus,
 .icon-btn:active{ transform: scale(.94); }
 .only-mobile{ display:none; }
 
-/* ---------- tombol X buat nutup sidebar, nempel di sebelah judul ---------- */
-.sidebar-close-btn{
-  margin-left:auto; flex-shrink:0;
-  opacity:0; transform: scale(.5) rotate(-90deg);
-  transition: opacity .25s ease, transform .3s cubic-bezier(0.16,1,0.3,1);
+/* tombol asli garis-3 di topbar: tetap makan tempat di layout, tapi gak kelihatan
+   (yang kelihatan & bisa dipencet gantinya adalah .menu-ghost-btn di bawah) */
+.menu-btn-hidden{ visibility:hidden; pointer-events:none; }
+
+/* ---------- ghost button: garis-3 <-> X, bisa "teleport" bebas ke mana aja ---------- */
+.menu-ghost-btn{
+  position:fixed; top:0; left:0; z-index:41;
+  transition: transform .35s cubic-bezier(0.16,1,0.3,1);
 }
-.sidebar-close-btn svg{ width:16px; height:16px; }
-.sidebar.is-open .sidebar-close-btn{ opacity:1; transform: scale(1) rotate(0deg); }
+.menu-ghost-btn.no-transition{ transition:none; }
+.menu-ghost-btn .bar{
+  position:absolute; left:50%; width:18px; height:2px; border-radius:2px;
+  background: var(--text); transform: translateX(-50%);
+  transition: transform .3s cubic-bezier(0.16,1,0.3,1), opacity .2s ease, top .25s cubic-bezier(0.16,1,0.3,1);
+}
+.menu-ghost-btn .bar:nth-child(1){ top:12px; }
+.menu-ghost-btn .bar:nth-child(2){ top:17px; }
+.menu-ghost-btn .bar:nth-child(3){ top:22px; }
+.menu-ghost-btn.is-open .bar:nth-child(1){ top:17px; transform: translateX(-50%) rotate(45deg); }
+.menu-ghost-btn.is-open .bar:nth-child(2){ opacity:0; }
+.menu-ghost-btn.is-open .bar:nth-child(3){ top:17px; transform: translateX(-50%) rotate(-45deg); }
 
 .search{
   flex:1; max-width:420px; display:flex; align-items:center; gap:8px;
