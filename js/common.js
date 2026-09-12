@@ -180,11 +180,10 @@ function markActiveNav() {
 const SIDEBAR_KEY = "sidebarOpen";
 const isMobileLayout = () => window.matchMedia("(max-width: 860px)").matches;
 
-function setSidebarState(sidebar, scrim, menuBtn, open, { animate = true } = {}) {
+function setSidebarState(sidebar, scrim, open, { animate = true } = {}) {
   if (!animate) sidebar.classList.add("no-transition");
   sidebar.classList.toggle("is-open", open);
   scrim.classList.toggle("is-visible", open);
-  menuBtn.classList.toggle("is-open", open);
   sessionStorage.setItem(SIDEBAR_KEY, open ? "1" : "0");
   if (!animate) {
     // paksa reflow dulu baru lepas no-transition, biar animasi normal balik lagi buat interaksi selanjutnya
@@ -193,7 +192,7 @@ function setSidebarState(sidebar, scrim, menuBtn, open, { animate = true } = {})
   }
 }
 
-function bindSidebarSwipe(sidebar, scrim, menuBtn, setOpen) {
+function bindSidebarSwipe(sidebar, scrim, setOpen) {
   const EDGE_ZONE = 24; // px dari tepi kiri layar buat mulai geser membuka
   const DRAG_THRESHOLD = 6; // px sebelum gerakan dianggap "geser", biar tap biasa gak keganggu
 
@@ -279,10 +278,21 @@ function bindCommonEvents() {
   const sidebar = $("#sidebar");
   const scrim = $("#sidebarScrim");
   if (menuBtn && sidebar && scrim) {
-    // 3 garis terpisah biar bisa dianimasikan morph jadi "X"
-    menuBtn.innerHTML = '<span class="bar"></span><span class="bar"></span><span class="bar"></span>';
+    const setOpen = (open, opts) => setSidebarState(sidebar, scrim, open, opts);
 
-    const setOpen = (open, opts) => setSidebarState(sidebar, scrim, menuBtn, open, opts);
+    // tombol X buat nutup, ditaruh nempel sama judul di dalam sidebar sendiri —
+    // biar tetap kepencet meski sidebar lagi kebuka penuh dan nutupin tombol garis-3 di topbar
+    const brand = sidebar.querySelector(".sidebar-brand");
+    if (brand && !brand.querySelector("#sidebarCloseBtn")) {
+      const closeBtn = document.createElement("button");
+      closeBtn.type = "button";
+      closeBtn.id = "sidebarCloseBtn";
+      closeBtn.className = "icon-btn only-mobile sidebar-close-btn";
+      closeBtn.setAttribute("aria-label", "Tutup menu");
+      closeBtn.innerHTML = '<svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg>';
+      closeBtn.addEventListener("click", () => setOpen(false));
+      brand.appendChild(closeBtn);
+    }
 
     // pulihkan status sidebar dari halaman sebelumnya, tanpa animasi slide biar gak "muncul lagi" pas load
     if (isMobileLayout() && sessionStorage.getItem(SIDEBAR_KEY) === "1") {
@@ -292,7 +302,7 @@ function bindCommonEvents() {
     menuBtn.addEventListener("click", () => setOpen(!sidebar.classList.contains("is-open")));
     scrim.addEventListener("click", () => setOpen(false));
 
-    bindSidebarSwipe(sidebar, scrim, menuBtn, setOpen);
+    bindSidebarSwipe(sidebar, scrim, setOpen);
   }
   const logoutBtn = $("#logoutBtn");
   if (logoutBtn) logoutBtn.addEventListener("click", logout);
