@@ -278,31 +278,75 @@ function bindCommonEvents() {
   const sidebar = $("#sidebar");
   const scrim = $("#sidebarScrim");
   if (menuBtn && sidebar && scrim) {
-    const setOpen = (open, opts) => setSidebarState(sidebar, scrim, open, opts);
+    // Tombol asli di topbar disembunyikan (tapi tempatnya tetap kepakai di layout, biar
+    // elemen lain di topbar gak geser) — yang kelihatan & bisa dipencet adalah "ghost" di
+    // bawah ini, yang posisinya fixed jadi bebas dianimasikan pindah + z-index-nya bisa
+    // ditaruh di atas sidebar, gak akan pernah ketutup lagi.
+    menuBtn.classList.add("menu-btn-hidden");
 
-    // tombol X buat nutup, ditaruh nempel sama judul di dalam sidebar sendiri —
-    // biar tetap kepencet meski sidebar lagi kebuka penuh dan nutupin tombol garis-3 di topbar
-    const brand = sidebar.querySelector(".sidebar-brand");
-    if (brand && !brand.querySelector("#sidebarCloseBtn")) {
-      const closeBtn = document.createElement("button");
-      closeBtn.type = "button";
-      closeBtn.id = "sidebarCloseBtn";
-      closeBtn.className = "icon-btn only-mobile sidebar-close-btn";
-      closeBtn.setAttribute("aria-label", "Tutup menu");
-      closeBtn.innerHTML = '<svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg>';
-      closeBtn.addEventListener("click", () => setOpen(false));
-      brand.appendChild(closeBtn);
+    const ghostBtn = document.createElement("button");
+    ghostBtn.type = "button";
+    ghostBtn.className = "icon-btn only-mobile menu-ghost-btn";
+    ghostBtn.setAttribute("aria-label", "Menu");
+    ghostBtn.innerHTML = '<span class="bar"></span><span class="bar"></span><span class="bar"></span>';
+    document.body.appendChild(ghostBtn);
+
+    // posisi tombol asli di topbar (referensi tetap, gak ikut ketransform)
+    function ghostOriginRect() { return menuBtn.getBoundingClientRect(); }
+
+    // posisi tujuan: ujung kanan baris judul "Loyalty Assets Storage" di dalam sidebar.
+    // HARUS dipanggil SEBELUM class "is-open" di-toggle, biar posisi sidebar yang
+    // dibaca masih akurat (belum kepengaruh transisi yang baru mulai)
+    function ghostTargetRect() {
+      const origin = ghostOriginRect();
+      const brand = sidebar.querySelector(".sidebar-brand");
+      if (!brand) return origin;
+      const sidebarWidth = sidebar.offsetWidth;
+      const closedNow = !sidebar.classList.contains("is-open");
+      const brandRect = brand.getBoundingClientRect();
+      // kalau sidebar lagi ketutup, posisinya masih offset -sidebarWidth (di luar layar) -> kompensasi
+      const left = (closedNow ? brandRect.right + sidebarWidth : brandRect.right) - origin.width;
+      const top = brandRect.top + (brandRect.height - origin.height) / 2;
+      return { left, top, width: origin.width, height: origin.height };
     }
 
-    // pulihkan status sidebar dari halaman sebelumnya, tanpa animasi slide biar gak "muncul lagi" pas load
+    function applyGhostRect(rect, open, animate) {
+      if (!animate) ghostBtn.classList.add("no-transition");
+      ghostBtn.style.transform = `translate(${rect.left}px, ${rect.top}px)`;
+      ghostBtn.classList.toggle("is-open", open); // morph garis-3 <-> X bareng sama geser posisinya
+      if (!animate) {
+        void ghostBtn.offsetWidth; // paksa reflow
+        requestAnimationFrame(() => ghostBtn.classList.remove("no-transition"));
+      }
+    }
+
+    function placeGhost(open, animate) {
+      applyGhostRect(open ? ghostTargetRect() : ghostOriginRect(), open, animate);
+    }
+
+    const setOpen = (open, opts = {}) => {
+      const animate = opts.animate !== false;
+      const rect = open ? ghostTargetRect() : ghostOriginRect(); // baca posisi SEBELUM class di-toggle
+      setSidebarState(sidebar, scrim, open, opts);
+      applyGhostRect(rect, open, animate);
+    };
+
+    // posisi awal ghost = posisi asli tombol garis-3 di topbar
+    placeGhost(false, false);
+
+    // pulihkan status sidebar dari halaman sebelumnya, tanpa animasi biar gak "muncul lagi" pas load
     if (isMobileLayout() && sessionStorage.getItem(SIDEBAR_KEY) === "1") {
       setOpen(true, { animate: false });
     }
 
-    menuBtn.addEventListener("click", () => setOpen(!sidebar.classList.contains("is-open")));
+    ghostBtn.addEventListener("click", () => setOpen(!sidebar.classList.contains("is-open")));
     scrim.addEventListener("click", () => setOpen(false));
 
     bindSidebarSwipe(sidebar, scrim, setOpen);
+
+    window.addEventListener("resize", () => {
+      if (isMobileLayout()) placeGhost(sidebar.classList.contains("is-open"), false);
+    });
   }
   const logoutBtn = $("#logoutBtn");
   if (logoutBtn) logoutBtn.addEventListener("click", logout);
