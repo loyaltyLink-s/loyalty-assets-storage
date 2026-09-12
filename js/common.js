@@ -177,13 +177,122 @@ function markActiveNav() {
   });
 }
 
+const SIDEBAR_KEY = "sidebarOpen";
+const isMobileLayout = () => window.matchMedia("(max-width: 860px)").matches;
+
+function setSidebarState(sidebar, scrim, menuBtn, open, { animate = true } = {}) {
+  if (!animate) sidebar.classList.add("no-transition");
+  sidebar.classList.toggle("is-open", open);
+  scrim.classList.toggle("is-visible", open);
+  menuBtn.classList.toggle("is-open", open);
+  sessionStorage.setItem(SIDEBAR_KEY, open ? "1" : "0");
+  if (!animate) {
+    // paksa reflow dulu baru lepas no-transition, biar animasi normal balik lagi buat interaksi selanjutnya
+    void sidebar.offsetWidth;
+    requestAnimationFrame(() => sidebar.classList.remove("no-transition"));
+  }
+}
+
+function bindSidebarSwipe(sidebar, scrim, menuBtn, setOpen) {
+  const EDGE_ZONE = 24; // px dari tepi kiri layar buat mulai geser membuka
+  const DRAG_THRESHOLD = 6; // px sebelum gerakan dianggap "geser", biar tap biasa gak keganggu
+
+  let dragging = false;
+  let axisLocked = null; // "x" (horizontal, ini yang kita tangani) atau "y" (biarin scroll biasa)
+  let startX = 0, startY = 0, startTime = 0, baseAmount = 0, sidebarWidth = 0;
+
+  function currentAmount() {
+    return sidebar.classList.contains("is-open") ? sidebarWidth : 0;
+  }
+
+  function resetVisualDrag() {
+    sidebar.classList.remove("is-dragging");
+    scrim.classList.remove("is-dragging");
+    sidebar.style.transform = "";
+    scrim.style.opacity = "";
+  }
+
+  function onPointerDown(e) {
+    if (!isMobileLayout()) return;
+    const open = sidebar.classList.contains("is-open");
+    const withinSidebar = sidebar.contains(e.target);
+    const withinScrim = scrim.contains(e.target);
+
+    if (!open && e.clientX > EDGE_ZONE) return; // sidebar ketutup & bukan mulai dari tepi kiri -> abaikan
+    if (open && !withinSidebar && !withinScrim) return; // sidebar kebuka tapi sentuhan di luar sidebar/scrim
+
+    sidebarWidth = sidebar.offsetWidth;
+    dragging = true;
+    axisLocked = null;
+    startX = e.clientX;
+    startY = e.clientY;
+    startTime = Date.now();
+    baseAmount = currentAmount();
+  }
+
+  function onPointerMove(e) {
+    if (!dragging) return;
+    const dx = e.clientX - startX;
+    const dy = e.clientY - startY;
+
+    if (axisLocked === null) {
+      if (Math.abs(dx) < DRAG_THRESHOLD && Math.abs(dy) < DRAG_THRESHOLD) return;
+      axisLocked = Math.abs(dx) > Math.abs(dy) ? "x" : "y";
+      if (axisLocked === "y") { dragging = false; return; } // gerakan vertikal -> biarin scroll jalan normal
+      sidebar.classList.add("is-dragging");
+      scrim.classList.add("is-dragging");
+    }
+    if (axisLocked !== "x") return;
+
+    e.preventDefault();
+    const amount = Math.min(sidebarWidth, Math.max(0, baseAmount + dx));
+    sidebar.style.transform = `translateX(${amount - sidebarWidth}px)`;
+    scrim.style.opacity = String(amount / sidebarWidth);
+  }
+
+  function onPointerUp(e) {
+    if (!dragging) return;
+    dragging = false;
+    if (axisLocked !== "x") { resetVisualDrag(); return; }
+
+    const dx = e.clientX - startX;
+    const elapsed = Math.max(1, Date.now() - startTime);
+    const velocity = dx / elapsed; // px per ms
+    const amount = Math.min(sidebarWidth, Math.max(0, baseAmount + dx));
+    const ratio = amount / sidebarWidth;
+
+    // flick cepat langsung nurut arah geseran, kalau pelan baru dicek udah lewat setengah apa belum
+    const open = Math.abs(velocity) > 0.5 ? velocity > 0 : ratio > 0.5;
+
+    resetVisualDrag();
+    setOpen(open);
+  }
+
+  document.addEventListener("pointerdown", onPointerDown, { passive: true });
+  document.addEventListener("pointermove", onPointerMove, { passive: false });
+  document.addEventListener("pointerup", onPointerUp, { passive: true });
+  document.addEventListener("pointercancel", () => { dragging = false; resetVisualDrag(); }, { passive: true });
+}
+
 function bindCommonEvents() {
   const menuBtn = $("#menuBtn");
   const sidebar = $("#sidebar");
   const scrim = $("#sidebarScrim");
   if (menuBtn && sidebar && scrim) {
-    menuBtn.addEventListener("click", () => { sidebar.classList.add("is-open"); scrim.classList.add("is-visible"); });
-    scrim.addEventListener("click", () => { sidebar.classList.remove("is-open"); scrim.classList.remove("is-visible"); });
+    // 3 garis terpisah biar bisa dianimasikan morph jadi "X"
+    menuBtn.innerHTML = '<span class="bar"></span><span class="bar"></span><span class="bar"></span>';
+
+    const setOpen = (open, opts) => setSidebarState(sidebar, scrim, menuBtn, open, opts);
+
+    // pulihkan status sidebar dari halaman sebelumnya, tanpa animasi slide biar gak "muncul lagi" pas load
+    if (isMobileLayout() && sessionStorage.getItem(SIDEBAR_KEY) === "1") {
+      setOpen(true, { animate: false });
+    }
+
+    menuBtn.addEventListener("click", () => setOpen(!sidebar.classList.contains("is-open")));
+    scrim.addEventListener("click", () => setOpen(false));
+
+    bindSidebarSwipe(sidebar, scrim, menuBtn, setOpen);
   }
   const logoutBtn = $("#logoutBtn");
   if (logoutBtn) logoutBtn.addEventListener("click", logout);
