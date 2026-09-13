@@ -28,6 +28,13 @@ let dataState = {
 };
 
 // ---------- DRIVE ----------
+// Streaming langsung dari Drive API v3 (dukung Range request asli -> seek video/audio jalan normal),
+// jauh lebih stabil dibanding link "uc?export=download" yang gampang kena halaman peringatan Google.
+// File harus sudah di-share "Anyone with the link" (sudah otomatis diset saat upload lewat admin).
+function driveMediaUrl(fileId) {
+  return `https://www.googleapis.com/drive/v3/files/${encodeURIComponent(fileId)}?alt=media&key=${CONFIG.GOOGLE_API_KEY}`;
+}
+
 async function fetchTextContent(fileId) {
   const url = `${CONFIG.APPS_SCRIPT_URL}?action=textContent&fileId=${encodeURIComponent(fileId)}`;
   const res = await fetch(url);
@@ -219,15 +226,9 @@ async function openModal(item) {
   preview.innerHTML = "";
 
   if (item.kind === "video") {
-    preview.innerHTML = `
-      <div class="video-embed-wrap">
-        <iframe src="${item.viewUrl}" allow="autoplay"></iframe>
-      </div>`;
+    preview.innerHTML = `<video controls playsinline preload="metadata" src="${driveMediaUrl(item.id)}"></video>`;
   } else if (item.kind === "audio") {
-    preview.innerHTML = `
-      <div class="audio-iframe-wrap">
-        <iframe src="${item.viewUrl}" allow="autoplay"></iframe>
-      </div>`;
+    preview.innerHTML = `<audio controls preload="metadata" src="${driveMediaUrl(item.id)}"></audio>`;
   } else if (item.kind === "image") {
     preview.innerHTML = `<img src="${item.imageViewUrl}" alt="${escapeHtml(item.name)}">`;
   } else if (item.kind === "text") {
