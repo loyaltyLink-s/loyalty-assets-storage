@@ -219,7 +219,10 @@ async function openModal(item) {
   preview.innerHTML = "";
 
   if (item.kind === "video") {
-    preview.innerHTML = `<iframe src="${item.viewUrl}" width="100%" height="280" allow="autoplay" style="border:0;"></iframe>`;
+    preview.innerHTML = `
+      <div class="video-embed-wrap">
+        <iframe src="${item.viewUrl}" allow="autoplay"></iframe>
+      </div>`;
   } else if (item.kind === "audio") {
     preview.innerHTML = `
       <div class="audio-iframe-wrap">
