@@ -225,10 +225,24 @@ async function openModal(item) {
   txtPreview.hidden = true;
   preview.innerHTML = "";
 
-  if (item.kind === "video") {
-    preview.innerHTML = `<video controls playsinline preload="metadata" src="${driveMediaUrl(item.id)}"></video>`;
-  } else if (item.kind === "audio") {
-    preview.innerHTML = `<audio controls preload="metadata" src="${driveMediaUrl(item.id)}"></audio>`;
+  if (item.kind === "video" || item.kind === "audio") {
+    const tag = item.kind === "video" ? "video" : "audio";
+    const mediaUrl = driveMediaUrl(item.id);
+    preview.innerHTML = `
+      <${tag} controls playsinline preload="metadata" src="${mediaUrl}"></${tag}>
+      <div id="mediaDebug" class="media-debug"></div>`;
+    const mediaEl = preview.querySelector(tag);
+    const debugEl = preview.querySelector("#mediaDebug");
+    mediaEl.addEventListener("error", async () => {
+      debugEl.textContent = "Gagal muat media, lagi ambil detail error...";
+      try {
+        const res = await fetch(mediaUrl);
+        const text = await res.text();
+        debugEl.textContent = `HTTP ${res.status}\n${text.slice(0, 600)}`;
+      } catch (err) {
+        debugEl.textContent = `Fetch gagal: ${err.message}`;
+      }
+    });
   } else if (item.kind === "image") {
     preview.innerHTML = `<img src="${item.imageViewUrl}" alt="${escapeHtml(item.name)}">`;
   } else if (item.kind === "text") {
