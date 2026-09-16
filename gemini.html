@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tanya Gemini — Loyalty Assets Storage</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<div class="app">
+
+  <!-- ===== SIDEBAR ===== -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-brand">
+      <span class="brand-mark" aria-hidden="true">
+        <i class="dot dot-r"></i><i class="dot dot-g"></i><i class="dot dot-b"></i>
+      </span>
+      <span class="brand-text">Loyalty<br>Assets<br>Storage</span>
+    </div>
+
+    <nav class="sidebar-nav">
+      <a href="login.html" class="nav-item" id="navProfile" data-page="profil.html">
+        <svg viewBox="0 0 24 24"><path d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8Zm-7 8c0-3.3 3.1-6 7-6s7 2.7 7 6"/></svg>
+        <span>Masuk Sekarang</span>
+      </a>
+      <a href="index.html" class="nav-item" data-page="index.html">
+        <svg viewBox="0 0 24 24"><path d="M4 11.5 12 4l8 7.5V20a1 1 0 0 1-1 1h-4.5v-6h-5v6H5a1 1 0 0 1-1-1Z"/></svg>
+        <span>Dashboard</span>
+      </a>
+      <a href="data.html" class="nav-item" data-page="data.html">
+        <svg viewBox="0 0 24 24"><path d="M3 7a1 1 0 0 1 1-1h5l2 2h9a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1Z"/></svg>
+        <span>Data</span>
+      </a>
+      <a href="gemini.html" class="nav-item" data-page="gemini.html" id="navGemini" hidden>
+        <svg viewBox="0 0 24 24"><path d="M12 3c.5 3.5 2.5 5.5 6 6-3.5.5-5.5 2.5-6 6-.5-3.5-2.5-5.5-6-6 3.5-.5 5.5-2.5 6-6Z"/></svg>
+        <span>Tanya Gemini</span>
+      </a>
+      <div class="nav-divider"></div>
+      <a href="admin.html" class="nav-item" data-page="admin.html" id="navAdmin" hidden>
+        <svg viewBox="0 0 24 24"><path d="M12 3 4 6v6c0 4.5 3 7.7 8 9 5-1.3 8-4.5 8-9V6l-8-3Z"/></svg>
+        <span>Panel Admin</span>
+      </a>
+    </nav>
+
+    <div class="sidebar-footer">
+      <span class="footer-hint">Tersambung ke Google Drive</span>
+    </div>
+  </aside>
+  <div class="sidebar-scrim" id="sidebarScrim"></div>
+
+  <!-- ===== MAIN ===== -->
+  <div class="main">
+    <header class="topbar">
+      <button class="icon-btn only-mobile" id="menuBtn" aria-label="Menu">
+        <svg viewBox="0 0 24 24"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
+      </button>
+
+      <h1 class="page-title">Tanya Gemini</h1>
+
+      <div class="topbar-actions">
+        <a class="btn-ghost" id="loginBtn" href="login.html">Masuk</a>
+        <a class="user-chip" id="userChip" href="profil.html" hidden>
+          <img id="userAvatar" src="" alt="">
+          <span id="userHandle">Pengguna</span>
+        </a>
+      </div>
+    </header>
+
+    <main class="content gemini-page">
+      <div id="geminiGuard" class="empty-state">Memuat…</div>
+
+      <section id="geminiChat" class="gemini-chat" hidden>
+        <div class="gemini-settings-bar">
+          <button type="button" class="btn-ghost" id="geminiSettingsToggle">⚙ Pengaturan API</button>
+        </div>
+        <div class="gemini-settings-panel" id="geminiSettingsPanel" hidden>
+          <p class="gemini-settings-hint">Opsional — isi API key Gemini kamu sendiri kalau mau pakai kuota sendiri (langsung dari browser kamu, gak lewat server ini sama sekali). Kosongkan aja buat pakai key bersama yang diatur admin.</p>
+          <label class="gemini-settings-label" for="geminiOwnKey">API Key Gemini kamu</label>
+          <input type="password" id="geminiOwnKey" class="text-input" placeholder="AIzaSy…" autocomplete="off">
+          <label class="gemini-settings-label" for="geminiOwnModel">Model Gemini (buat key kamu sendiri)</label>
+          <input type="text" id="geminiOwnModel" class="text-input" placeholder="gemini-3.8-flash">
+          <div class="gemini-settings-actions">
+            <button type="button" class="btn-solid" id="geminiSettingsSave">Simpan</button>
+            <button type="button" class="btn-ghost" id="geminiSettingsClear">Hapus & pakai key bersama</button>
+          </div>
+        </div>
+
+        <div class="gemini-messages" id="geminiMessages">
+          <div class="gemini-welcome" id="geminiWelcome">
+            <div class="gemini-welcome-icon">
+              <svg viewBox="0 0 24 24"><path d="M12 3c.5 3.5 2.5 5.5 6 6-3.5.5-5.5 2.5-6 6-.5-3.5-2.5-5.5-6-6 3.5-.5 5.5-2.5 6-6Z"/></svg>
+            </div>
+            <h2>Halo! Ada yang bisa dibantu?</h2>
+            <p>Tanya apa aja — nyari ide, nulis caption, sampai bantuin ngoding.</p>
+          </div>
+        </div>
+
+        <form class="gemini-inputbar" id="geminiForm">
+          <textarea id="geminiInput" placeholder="Tanya Gemini…" rows="1"></textarea>
+          <button type="submit" class="gemini-send-btn" id="geminiSendBtn" aria-label="Kirim">
+            <svg viewBox="0 0 24 24"><path d="M4 12h16M13 5l7 7-7 7"/></svg>
+          </button>
+        </form>
+      </section>
+    </main>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="js/config.js?v=20260914"></script>
+<script src="js/common.js?v=20260916"></script>
+<script src="js/gemini.js?v=20260916"></script>
+</body>
+</html>
