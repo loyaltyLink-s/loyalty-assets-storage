@@ -30,10 +30,12 @@ function switchAdminTab(tab) {
   $("#adminReviews").hidden = tab !== "reviews";
   $("#adminUpload").hidden = tab !== "upload";
   $("#adminHidden").hidden = tab !== "hidden";
+  $("#adminGemini").hidden = tab !== "gemini";
   $("#adminSettings").hidden = tab !== "settings";
   if (tab === "reviews") loadAdminReviews();
   if (tab === "upload") loadAdminFolderGrid();
   if (tab === "hidden") loadHiddenFolders();
+  if (tab === "gemini") loadAdminGeminiSettings();
   if (tab === "settings") loadLoginSettings();
 }
 
@@ -296,7 +298,39 @@ async function loadLoginSettings() {
   });
 }
 
+// =========================================================
+// TAB GEMINI — atur model default/bersama (API key tetap di Script Properties)
+// =========================================================
+async function loadAdminGeminiSettings() {
+  const input = $("#adminGeminiModel");
+  const note = $("#adminGeminiNote");
+  note.textContent = "";
+  try {
+    const res = await fetch(`${CONFIG.APPS_SCRIPT_URL}?action=geminiModel`);
+    const data = await res.json();
+    input.value = data.model || "";
+  } catch (err) {
+    note.textContent = "Gagal memuat model saat ini: " + err.message;
+  }
+}
+
 document.addEventListener("DOMContentLoaded", () => {
   $$("[data-admin-tab]").forEach((btn) => btn.addEventListener("click", () => switchAdminTab(btn.dataset.adminTab)));
   bindAdminUploadEvents();
+
+  const adminGeminiSaveBtn = $("#adminGeminiSaveBtn");
+  if (adminGeminiSaveBtn) {
+    adminGeminiSaveBtn.addEventListener("click", async () => {
+      const model = $("#adminGeminiModel").value.trim();
+      const note = $("#adminGeminiNote");
+      if (!model) { note.textContent = "Nama model gak boleh kosong."; return; }
+      note.textContent = "Menyimpan…";
+      try {
+        await driveWrite("setGeminiModel", { model });
+        note.textContent = "Tersimpan ✓";
+      } catch (err) {
+        note.textContent = "Gagal: " + err.message;
+      }
+    });
+  }
 });
