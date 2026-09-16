@@ -144,10 +144,12 @@ function updateAuthUI() {
   const userChip = $("#userChip");
   const navProfile = $("#navProfile");
   const navAdmin = $("#navAdmin");
+  const navGemini = $("#navGemini");
 
   if (loginBtn) loginBtn.hidden = loggedIn;
   if (userChip) userChip.hidden = !loggedIn;
   if (navAdmin) navAdmin.hidden = !isAdmin();
+  if (navGemini) navGemini.hidden = !loggedIn;
 
   if (navProfile) {
     navProfile.href = loggedIn ? "profil.html" : "login.html";
