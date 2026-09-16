@@ -360,6 +360,83 @@ a:focus,
   white-space:pre-wrap; word-break:break-word; text-align:left;
 }
 
+/* ---------- Tanya Gemini ---------- */
+.content.gemini-page{
+  flex:1; display:flex; flex-direction:column; min-height:0;
+  max-width:760px; padding-bottom:16px;
+}
+.gemini-chat{ flex:1; display:flex; flex-direction:column; min-height:0; }
+.gemini-messages{
+  flex:1; overflow-y:auto; display:flex; flex-direction:column; gap:10px;
+  padding:8px 4px 16px;
+}
+.gemini-welcome{ margin:auto; text-align:center; max-width:340px; color: var(--text-muted); }
+.gemini-welcome-icon{
+  width:56px; height:56px; margin:0 auto 16px; border-radius:50%;
+  display:flex; align-items:center; justify-content:center;
+  background: var(--accent-gradient);
+}
+.gemini-welcome-icon svg{ width:28px; height:28px; stroke:#fff; }
+.gemini-welcome h2{ font-family: var(--font-display); font-size:18px; color: var(--text); margin-bottom:6px; }
+.gemini-welcome p{ font-size:13.5px; line-height:1.5; }
+
+.gemini-bubble{
+  max-width:82%; padding:10px 14px; border-radius: var(--radius);
+  font-size:14px; line-height:1.55; white-space:pre-wrap; word-break:break-word;
+  animation: geminiPop .2s ease;
+}
+@keyframes geminiPop{ from{ opacity:0; transform: translateY(6px); } to{ opacity:1; transform:none; } }
+.gemini-bubble-user{
+  align-self:flex-end; background: var(--accent-gradient); color:#fff;
+  border-bottom-right-radius:4px;
+}
+.gemini-bubble-assistant{
+  align-self:flex-start; background: var(--surface); border: var(--border-w) solid var(--border);
+  color: var(--text); border-bottom-left-radius:4px;
+}
+.gemini-bubble-typing{ color: var(--text-faint); font-style:italic; }
+.gemini-bubble-error{
+  background: rgba(224,57,126,.08); border-color: var(--accent-pink); color: var(--accent-pink);
+}
+
+.gemini-inputbar{
+  flex-shrink:0; display:flex; align-items:flex-end; gap:8px;
+  background: var(--surface); border: var(--border-w) solid var(--border); border-radius: var(--radius);
+  padding:8px 8px 8px 16px; margin-top:8px;
+}
+.gemini-inputbar textarea{
+  flex:1; border:none; outline:none; background:none; resize:none;
+  font-family: var(--font-body); font-size:14px; color: var(--text);
+  max-height:160px; line-height:1.5; padding:6px 0;
+}
+.gemini-send-btn{
+  flex-shrink:0; width:36px; height:36px; border-radius:50%; border:none;
+  background: var(--accent-gradient); cursor:pointer;
+  display:flex; align-items:center; justify-content:center;
+  transition: transform .15s ease, opacity .15s ease;
+}
+.gemini-send-btn svg{ width:18px; height:18px; stroke:#fff; }
+.gemini-send-btn:active{ transform: scale(.9); }
+.gemini-send-btn:disabled{ opacity:.5; cursor:default; }
+
+/* ---------- input teks umum (dipakai di pengaturan Gemini, chat & admin) ---------- */
+.text-input{
+  width:100%; padding:9px 12px; border-radius: var(--radius-sm);
+  border: var(--border-w) solid var(--border); background: var(--surface);
+  color: var(--text); font-size:13.5px; font-family: var(--font-body);
+  outline:none; transition: border-color .2s ease;
+}
+.text-input:focus{ border-color: var(--accent-violet); }
+
+.gemini-settings-bar{ display:flex; justify-content:flex-end; margin-bottom:8px; }
+.gemini-settings-panel{
+  background: var(--surface-2); border: var(--border-w) solid var(--border); border-radius: var(--radius);
+  padding:14px; margin-bottom:10px; display:flex; flex-direction:column; gap:8px;
+}
+.gemini-settings-hint{ font-size:12.5px; color: var(--text-muted); line-height:1.5; margin-bottom:2px; }
+.gemini-settings-label{ font-size:12px; font-weight:600; color: var(--text-muted); }
+.gemini-settings-actions{ display:flex; gap:8px; margin-top:4px; }
+
 .modal-body{ padding:20px 22px 24px; }
 .modal-head h2{ margin:0 0 4px; font-size:17px; font-family: var(--font-display); }
 .modal-meta{ font-family: var(--font-mono); font-size:12px; color: var(--text-faint); }
